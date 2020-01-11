@@ -2,10 +2,31 @@ from Map import GameMap
 from utils.config_utils import Config
 
 
+"""
+Game state representation
+"""
+
+
 class Frame():
 
     def __init__(self):
         pass
+
+
+"""
+Game action requests for player(bot)
+"""
+
+
+class Actions():
+
+    def __init__(self):
+        pass
+
+
+"""
+Environment object used by player(bot) to perform operations on the game
+"""
 
 
 class Environment():

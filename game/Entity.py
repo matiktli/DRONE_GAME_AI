@@ -2,6 +2,10 @@ from abc import ABC
 
 MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT, STAY, DUPLICATE = range(0, 6)
 
+"""
+Player's Drone entity
+"""
+
 
 class Drone():
 

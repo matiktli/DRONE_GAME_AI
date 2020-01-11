@@ -20,6 +20,11 @@ def config_creation_wizard():
     number_of_drones_per_player = int(input('- Number of drones per player: '))
 
 
+"""
+Class to simplify loading of config data
+"""
+
+
 class Config():
 
     def __init__(self, path):
