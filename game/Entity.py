@@ -9,8 +9,9 @@ Player's Drone entity
 
 class Drone():
 
-    def __init__(self, position=(0, 0), player_id=None, energy=100):
+    def __init__(self, position=(0, 0), player_id=None, drone_id=None, energy=100):
         self.player_id = player_id
+        self.drone_id = drone_id
         self.energy = energy
 
     def action_move(self, move_code, move_cost_energy=1):

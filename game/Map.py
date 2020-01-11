@@ -50,3 +50,9 @@ class GameMap():
             return self.grid.ravel()[id_int]
         else:
             return None
+
+    def for_each_cell_do(self, function, params: []):
+        for y in range(self.size[1]):
+            for x in range(self.size[0]):
+                curent_cell = self.get_cell((x, y))
+                function(curent_cell, params)
