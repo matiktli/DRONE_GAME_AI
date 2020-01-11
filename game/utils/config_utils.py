@@ -31,6 +31,7 @@ class Config():
         raw_data = load_config(path)
         self.game_initial_size = (int(raw_data['game']['initial_size']['x']),
                                   int(raw_data['game']['initial_size']['y']))
+        self.game_max_turns = int(raw_data['game']['max_turns'])
         self.game_number_of_players = len(raw_data['players'])
         self.players = raw_data['players']
 

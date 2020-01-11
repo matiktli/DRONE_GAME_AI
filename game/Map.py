@@ -13,7 +13,8 @@ class Cell():
         self.drones = drones
 
     # Returns if there is any ship inside the cell
-    def is_occupied(self) -> bool:
+    def is_occupied(self, occupied_by: int) -> bool:
+        # TODO
         return self.drones != None
 
 
@@ -28,7 +29,7 @@ class GameMap():
         self.size = initial_size
         self.grid = np.array(self.__initialise_grid(initial_size))
 
-    def __initialise_grid(self, size) -> Cell:
+    def __initialise_grid(self, size) -> []:
         grid = [[None for x in range(size[0])] for y in range(size[1])]
         for y in range(size[1]):
             for x in range(size[0]):

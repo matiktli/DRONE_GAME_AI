@@ -1,16 +1,6 @@
 from Map import GameMap
 from utils.config_utils import Config
-
-
-"""
-Game state representation
-"""
-
-
-class Frame():
-
-    def __init__(self):
-        pass
+from Engine import GameEngine, GameFrame
 
 
 """
@@ -34,18 +24,18 @@ class Environment():
     def __init__(self, config: Config):
         self.config = config
         self.map = GameMap(config.game_initial_size)
+        self.engine = GameEngine(config.game_max_turns)
 
     # Get current frame for environemnt
-    def get_frame(self) -> Frame:
-        pass
+    def get_frame(self) -> GameFrame:
+        return self.engine.get_current_game_frame()
 
     # Pass decided actions for each of drones
     def pass_actions(self, actions):
-        pass
+        for action in actions:
+            self.engine.add_action_to_query(action)
 
     # End turn and perform all after move calculations
     def end_turn(self):
-        return True
-
-    def __init_players(self, config: Config):
-        pass
+        self.engine.perform_actions()
+        return False
