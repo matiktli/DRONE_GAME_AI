@@ -29,5 +29,7 @@ If drone decided to move by more than one step then energy consumption is...
 #### STAY
 Staying in place can benefit in recharging drones energy. `energy_gain = 10`
 
-#### DUPLICATION
+#### DUPLICATE
 By duplicating drone firstly loses half of it's energy and then spawn 2nd drone with the same energy on top of him at the same location
+
+    TW
