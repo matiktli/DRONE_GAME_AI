@@ -65,7 +65,13 @@ Game and can be done by:
 - If there are no drones ofc.
 
 ---
----
 
 ## Config
+
+TODO
+
+---
+
+## Notes
+
 TODO
