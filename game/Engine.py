@@ -1,6 +1,7 @@
 import numpy as np
 from Map import Cell, GameMap
 from enum import Enum
+from Entity import Drone
 
 
 class Action(Enum):
@@ -83,6 +84,8 @@ class GameEngine():
     def get_current_game_frame(self) -> GameFrame:
         return GameFrame(map=self.game_map)
 
+    # Returns state of engine:
+    # {'is_on': bool}
     def get_state(self) -> object:
         return {'is_on': self.cur_turn <= self.max_turns}
 
@@ -97,29 +100,40 @@ class GameEngineUtils():
     def __init__(self):
         pass
 
-    # Calculate new position
+    # Calculate new position with RESPECTING game engine, end of maps are connected as default
     def __calculate_new_position(self, initial_position: tuple, action_vector: tuple, map_x_y: tuple) -> tuple:
         return initial_position
 
     # Logic responsible for valid movement of drone
     def __perform_action_move(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_move()
+        # Valid new positions
         new_position = self.__calculate_new_position(
             game_action.drone_position, game_action.action['vector'], game_map.size)
         cell = game_map.get_cell(game_action.drone_position)
 
         assert cell.is_occupied() == True
-        drone = next((d for d in cell.drones if d.drone_id ==
-                      game_action.drone_id), None)
+        drone: Drone = next((d for d in cell.drones if d.drone_id ==
+                             game_action.drone_id), None)
         assert drone != None
         assert game_action.player_id == drone.player_id
+        # Drone perform action - so losses energy
+        drone.action_move(move_cost_energy=2)
+        is_dead = drone.get_state()
+        # Map accepts movement besides of drone state, why not
+        game_map.change_drone_position(
+            drone.drone_id, game_action.drone_position, new_position)
 
-        # TODO
+        if is_dead:
+            # Remove drone from cell - so kill it
+            new_cell = game_map.get_cell(new_position)
+            new_cell.remove_drone(drone.drone_id)
         return game_map
 
     # Logic responsible for valid special actions of drone
     def __perform_action_special(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_special()
+        # TODO
         return game_map
 
     # Public function to interact with env (map)

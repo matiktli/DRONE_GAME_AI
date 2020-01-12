@@ -1,7 +1,7 @@
 from Map import GameMap
 from utils.config_utils import Config
-from Engine import GameEngine, GameFrame
-
+from Engine import GameEngine, GameFrame, GameAction
+from typing import List
 
 """
 Environment object used by player(bot) to perform operations on the game
@@ -19,13 +19,13 @@ class Environment():
         return self.engine.get_current_game_frame()
 
     # Pass decided actions for each of drones
-    def pass_actions(self, actions):
+    def pass_actions(self, actions: List[GameAction]):
         for action in actions:
             self.engine.add_action_to_query(action)
 
     # End turn and perform all after move callculations
     def end_turn(self):
-        # Perform bot actions
+        # Perform bot/s actions
         self.engine.perform_actions_in_query()
         # Add and perform environment actions/outcomes
         self.engine.add_environment_actions_to_query()
