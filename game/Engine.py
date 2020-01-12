@@ -118,9 +118,27 @@ class GameEngineUtils():
 
     # Calculate new position with RESPECTING game engine, end of maps are connected as default
     def __calculate_new_position(self, initial_position: tuple, action_vector: tuple, map_x_y: tuple) -> tuple:
-        # TODO - implement move logic
+        if action_vector[0] == 0 and action_vector[1] == 0:
+            return initial_position
 
-        return initial_position
+        new_raw_x, new_raw_y = initial_position[0] + \
+            action_vector[0], initial_position[1] + action_vector[1]
+
+        # If new position is outside right
+        if new_raw_x > map_x_y[0]:
+            new_raw_x = int(new_raw_x % map_x_y[0])
+        # If new position is outside left
+        elif new_raw_x < 0:
+            new_raw_x = int(new_raw_x + map_x_y[0])
+
+        # If new position is outside up
+        if new_raw_y > map_x_y[1]:
+            new_raw_y = int(new_raw_y % map_x_y[1])
+        # If new position is outside down
+        elif new_raw_y < 0:
+            new_raw_y = int(new_raw_y + map_x_y[1])
+
+        return (new_raw_x, new_raw_y)
 
     # Obtain drone from cell with verifying player id, drone position and drone id.
     def __obtain_drone_from_cell(self, player_id, drone_id, drone_position, game_map):
@@ -129,7 +147,7 @@ class GameEngineUtils():
         drone: Drone = next(
             (d for d in cell.drones if d.drone_id == drone_id), None)
         assert drone != None
-        assert player_id == drone.player_id
+        assert player_id == drone.player_id or player_id == 'ENV'
         return drone, cell
 
     # Logic responsible for valid movement of drone
@@ -176,6 +194,16 @@ class GameEngineUtils():
     # Login responsible for performing env decided actions
     def __perform_env_action(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         # TODO - implement env specific
+        assert game_action.is_env()
+        drone, cell = self.__obtain_drone_from_cell(
+            game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+
+        # Attack env action
+        if game_action.action == EnvAction.ATTACK:
+            pass
+        # Detonate env action
+        if game_action.action == EnvAction.DETONATE:
+            pass
         return game_map
 
     # Public function to interact with env (map)
