@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from Engine import GameFrame, GameMove
+from Engine import GameFrame, GameAction, Action
 from Entity import Drone
+import random
 
 
 class Bot(ABC):
@@ -29,6 +30,9 @@ class RandomBot(Bot):
                         decided_action = self.__make_decission(
                             game_frame, drone)
                         actions_to_perform.append(decided_action)
+        return actions_to_perform
 
-    def __make_decission(self, game_frame: GameFrame, drone: Drone) -> GameMove:
-        return None
+    # Make random action for single drone
+    def __make_decission(self, game_frame: GameFrame, drone: Drone) -> GameAction:
+        rand_action = random.choice(game_frame.player_available_actions)
+        return GameAction(drone.player_id, drone.drone_id, drone.drone_position, rand_action)

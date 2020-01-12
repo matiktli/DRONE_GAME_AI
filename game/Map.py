@@ -1,5 +1,6 @@
 from abc import ABC
 import numpy as np
+from Entity import Drone
 
 """
 Single Cell on the 2D Grid
@@ -8,14 +9,29 @@ Single Cell on the 2D Grid
 
 class Cell():
 
-    def __init__(self, id=0, position=(0, 0), drones=None):
+    def __init__(self, id=0, position=(0, 0), drones=[]):
         self.position = position
         self.drones = drones
 
     # Returns if there is any ship inside the cell
-    def is_occupied(self, occupied_by: int) -> bool:
-        # TODO
-        return self.drones != None
+    def is_occupied(self, occupied_by: int = -1) -> bool:
+        result = self.drones != None
+        if occupied_by != -1:
+            result = result and occupied_by in [
+                int(d.drone_id) for d in self.drones]
+        return result
+
+    def add_drone(self, drone: Drone):
+        assert not self.is_occupied(drone.drone_id)
+        self.drones.append(drone)
+
+    def remove_drone(self, drone_id) -> bool:
+        assert self.is_occupied(drone_id)
+        for i, drone in enumerate(self.drones):
+            if drone.drone_id == drone_id:
+                del self.drones[i]
+                return True
+        return False
 
 
 """
@@ -38,18 +54,48 @@ class GameMap():
         print(f'Initialised grid of size: {size}')
         return grid
 
-    def get_cell(self, location) -> Cell:
+    # Get cell by search that is either: tuple - position(x,y) or int - drone_id
+    def get_cell(self, search) -> Cell:
         assert self.grid != None
-        if isinstance(location, tuple):
-            # Get single cell by location: (x,y)
-            x, y = location[0], location[1]
+        if isinstance(search, tuple):
+            # Get single cell by search: (x,y)
+            x, y = search[0], search[1]
             return self.grid[y][x]
-        elif isinstance(location, int):
-            # Get single cell by int id
-            id_int = location
-            return self.grid.ravel()[id_int]
+        elif isinstance(search, int):
+            # Get single cell by drone_id id
+            for cell in self.grid.ravel():
+                if cell.is_occupied():
+                    for drone in cell.drones:
+                        if drone.drone_id == search:
+                            return cell
         else:
             return None
+
+    # With assumption that move is valid it changes the position of drone
+    def change_drone_position(self, drone_id, current_position: tuple, new_position: tuple):
+        assert new_position[0] in range(
+            0, self.size[0]) and new_position[1] in range(0, self.size[1])
+        cell = self.get_cell(current_position)
+        assert cell.is_occupied() == True
+        drone = [drone for drone in cell.drones if drone.drone_id == drone_id]
+        assert len(drone) == 1 and drone[0] != None
+        drone = drone[0]
+
+        new_cell = self.get_cell(new_position)
+        new_cell.add_drone(drone)
+
+        cell.remove_drone(drone)
+
+    # Return drones wrapper for callculation purposes {'<player_id>': Drones[]}
+    def get_drones(self) -> object:
+        drones = {}
+        for cell in self.grid.ravel():
+            if cell.is_occupied():
+                for drone in cell.drones:
+                    if drone.player_id not in drones:
+                        drones[drone.player_id] = []
+                    drones[str(drone.player_id)].append(drone)
+        return drones
 
     def for_each_cell_do(self, function, params: []):
         for y in range(self.size[1]):
