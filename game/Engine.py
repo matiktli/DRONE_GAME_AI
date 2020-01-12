@@ -15,7 +15,11 @@ class Action(Enum):
 
 
 class EnvAction(Enum):
+    # When two or more drones are at the same cell
     ATTACK = {'id': 100}
+
+    # When drone is surrounded by at least 3 oponent drones and is only drone in cell
+    DETONATE = {'id': 101}
 
 
 """
@@ -34,7 +38,7 @@ Game action requests to engine dto
 """
 
 
-class GameAction(ABC):
+class GameAction():
 
     def __init__(self, player_id, drone_id, drone_position, action: Action | EnvAction):
         self.player_id = player_id
@@ -49,7 +53,7 @@ class GameAction(ABC):
         return self.action in [Action.STAY, Action.DUPLICATE]
 
     def is_env(self):
-        return self.action in [EnvAction.ATTACK]
+        return self.action in [EnvAction.ATTACK, EnvAction.DETONATE]
 
     # Bad implementation
     def __get_new_position(self):
@@ -57,11 +61,6 @@ class GameAction(ABC):
         assert self.action != None
         assert self.is_move()
         return (self.drone_position[0] + self.action['vector'][0], self.drone_position[1] + self.action['vector'][1])
-
-
-class GameEnvAction(GameAction):
-
-    def __init__(self, player_id, drone_id, drone_position,)
 
 
 """
@@ -84,8 +83,11 @@ class GameEngine():
 
     # Add all environment decission actions to query (once a turn)
     def add_environment_actions_to_query(self):
-        # TODO - decide how to add env actions
-        pass
+        for y in range(0, self.game_map.size[1]):
+            for x in range(0, self.game_map.size[0]):
+                game_env_action = None
+                cell = self.game_map.get_cell((x, y))
+                # TODO - decide how to add env actions
 
     # For each action in query perform given move with including game logic (end of turn)
     def perform_actions_in_query(self, clean=True):
@@ -117,6 +119,7 @@ class GameEngineUtils():
     # Calculate new position with RESPECTING game engine, end of maps are connected as default
     def __calculate_new_position(self, initial_position: tuple, action_vector: tuple, map_x_y: tuple) -> tuple:
         # TODO - implement move logic
+
         return initial_position
 
     # Obtain drone from cell with verifying player id, drone position and drone id.
@@ -182,5 +185,5 @@ class GameEngineUtils():
         if game_action.is_special():
             game_map = self.__perform_action_special(game_action, game_map)
         if game_action.is_env():
-            game_map = self.__pefrorm_env_action(game_action, game_map)
+            game_map = self.__perform_env_action(game_action, game_map)
         return game_map
