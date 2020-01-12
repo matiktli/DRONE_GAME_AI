@@ -193,16 +193,19 @@ class GameEngineUtils():
 
     # Login responsible for performing env decided actions
     def __perform_env_action(self, game_action: GameAction, game_map: GameMap) -> GameMap:
-        # TODO - implement env specific
         assert game_action.is_env()
         drone, cell = self.__obtain_drone_from_cell(
             game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
 
         # Attack env action
         if game_action.action == EnvAction.ATTACK:
-            pass
+            # TODO - implement attack logic
+            enemy_drones = [(d)
+                            for d in cell.drones if d.player_id != drone.player_id]
+
         # Detonate env action
         if game_action.action == EnvAction.DETONATE:
+            # TODO - implement detonate logic
             pass
         return game_map
 
