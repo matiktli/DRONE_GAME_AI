@@ -13,7 +13,7 @@ keep_playing = True
 while keep_playing:
     frame = env.get_frame()
     for player in env.player_svc.players:
-        players_decissions = player.make_decissions(frame)
+        players_decissions = player.bot.make_decissions(frame)
         env.pass_actions(players_decissions)
 
     keep_playing = env.end_turn()
