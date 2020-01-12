@@ -2,6 +2,7 @@ import numpy as np
 from Map import Cell, GameMap
 from enum import Enum
 from Entity import Drone
+from abc import ABC
 
 
 class Action(Enum):
@@ -11,6 +12,10 @@ class Action(Enum):
     MOVE_RIGHT = {'id': 3, 'vector': (1, 0)}
     STAY = {'id': 4, 'vector': (0, 0)}
     DUPLICATE = {'id': 5, 'vector': (0, 0)}
+
+
+class EnvAction(Enum):
+    ATTACK = {'id': 100}
 
 
 """
@@ -29,9 +34,9 @@ Game action requests to engine dto
 """
 
 
-class GameAction():
+class GameAction(ABC):
 
-    def __init__(self, player_id, drone_id, drone_position, action: Action):
+    def __init__(self, player_id, drone_id, drone_position, action: Action | EnvAction):
         self.player_id = player_id
         self.drone_id = drone_id
         self.drone_position = drone_position
@@ -43,12 +48,20 @@ class GameAction():
     def is_special(self):
         return self.action in [Action.STAY, Action.DUPLICATE]
 
+    def is_env(self):
+        return self.action in [EnvAction.ATTACK]
+
     # Bad implementation
     def __get_new_position(self):
         assert self.drone_position != None
         assert self.action != None
-        assert self.action['id'] in range(0, 4)
+        assert self.is_move()
         return (self.drone_position[0] + self.action['vector'][0], self.drone_position[1] + self.action['vector'][1])
+
+
+class GameEnvAction(GameAction):
+
+    def __init__(self, player_id, drone_id, drone_position,)
 
 
 """
@@ -71,6 +84,7 @@ class GameEngine():
 
     # Add all environment decission actions to query (once a turn)
     def add_environment_actions_to_query(self):
+        # TODO - decide how to add env actions
         pass
 
     # For each action in query perform given move with including game logic (end of turn)
@@ -102,23 +116,30 @@ class GameEngineUtils():
 
     # Calculate new position with RESPECTING game engine, end of maps are connected as default
     def __calculate_new_position(self, initial_position: tuple, action_vector: tuple, map_x_y: tuple) -> tuple:
+        # TODO - implement move logic
         return initial_position
 
+    # Obtain drone from cell with verifying player id, drone position and drone id.
+    def __obtain_drone_from_cell(self, player_id, drone_id, drone_position, game_map):
+        cell = game_map.get_cell(drone_position)
+        assert cell.is_occupied(drone_id)
+        drone: Drone = next(
+            (d for d in cell.drones if d.drone_id == drone_id), None)
+        assert drone != None
+        assert player_id == drone.player_id
+        return drone, cell
+
     # Logic responsible for valid movement of drone
+
     def __perform_action_move(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_move()
         # Valid new positions
         new_position = self.__calculate_new_position(
             game_action.drone_position, game_action.action['vector'], game_map.size)
-        cell = game_map.get_cell(game_action.drone_position)
-
-        assert cell.is_occupied() == True
-        drone: Drone = next((d for d in cell.drones if d.drone_id ==
-                             game_action.drone_id), None)
-        assert drone != None
-        assert game_action.player_id == drone.player_id
+        drone, cell = self.__obtain_drone_from_cell(game_action.player_id,
+                                                    game_action.drone_id, game_action.drone_position, game_map)
         # Drone perform action - so losses energy
-        drone.action_move(move_cost_energy=2)
+        drone.action_move()
         is_dead = drone.get_state()
         # Map accepts movement besides of drone state, why not
         game_map.change_drone_position(
@@ -133,7 +154,25 @@ class GameEngineUtils():
     # Logic responsible for valid special actions of drone
     def __perform_action_special(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_special()
-        # TODO
+        drone, cell = self.__obtain_drone_from_cell(
+            game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+
+        # Duplicate action
+        if game_action.action == Action.DUPLICATE:
+            drone.action_duplicate()
+            # TODO - spawn new drone
+        # Stay action
+        if game_action.action == Action.STAY:
+            drone.action_stay()
+        is_dead = drone.get_state()
+
+        if is_dead:
+            cell.remove_drone(drone.drone_id)
+        return game_map
+
+    # Login responsible for performing env decided actions
+    def __perform_env_action(self, game_action: GameAction, game_map: GameMap) -> GameMap:
+        # TODO - implement env specific
         return game_map
 
     # Public function to interact with env (map)
@@ -142,4 +181,6 @@ class GameEngineUtils():
             game_map = self.__perform_action_move(game_action, game_map)
         if game_action.is_special():
             game_map = self.__perform_action_special(game_action, game_map)
+        if game_action.is_env():
+            game_map = self.__pefrorm_env_action(game_action, game_map)
         return game_map
