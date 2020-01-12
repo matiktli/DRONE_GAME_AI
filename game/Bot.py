@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from Engine import GameFrame, GameMove
+from Engine import GameFrame, GameAction
 from Entity import Drone
 
 
@@ -30,5 +30,5 @@ class RandomBot(Bot):
                             game_frame, drone)
                         actions_to_perform.append(decided_action)
 
-    def __make_decission(self, game_frame: GameFrame, drone: Drone) -> GameMove:
+    def __make_decission(self, game_frame: GameFrame, drone: Drone) -> GameAction:
         return None

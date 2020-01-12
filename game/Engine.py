@@ -40,7 +40,7 @@ Game action requests to engine dto
 
 class GameAction():
 
-    def __init__(self, player_id, drone_id, drone_position, action: Action | EnvAction):
+    def __init__(self, player_id, drone_id, drone_position, action):
         self.player_id = player_id
         self.drone_id = drone_id
         self.drone_position = drone_position
@@ -70,12 +70,13 @@ MAIN Game engine.
 
 class GameEngine():
 
-    def __init__(self, game_map: GameMap, max_turns=100):
+    def __init__(self, game_map: GameMap, player_service, max_turns=100):
         self.cur_turn = 0
         self.max_turns = max_turns
         self.actions_query = []
         self.game_map = game_map
         self.utils = GameEngineUtils()
+        self.player_service = player_service
 
     # Add single drone action to query (for each drone in each player)
     def add_action_to_query(self, game_action: GameAction):
@@ -181,7 +182,7 @@ class GameEngineUtils():
         # Duplicate action
         if game_action.action == Action.DUPLICATE:
             drone.action_duplicate()
-            # TODO - spawn new drone
+            # TODO - id_generator -> spawn new drone
         # Stay action
         if game_action.action == Action.STAY:
             drone.action_stay()
