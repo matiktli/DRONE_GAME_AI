@@ -4,7 +4,7 @@ from utils.config_utils import *
 
 
 config_path = config_creation_wizard()
-# config_path = ''
+# config_path = 'TEST_CONFIG.json'
 config = Config(config_path)
 env = Environment(config)
 exit()

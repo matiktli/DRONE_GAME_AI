@@ -4,6 +4,10 @@ from Engine import GameEngine, GameFrame, GameAction, Action
 from typing import List
 from Bot import Bot, RandomBot
 
+"""
+Player representation object 
+"""
+
 
 class Player():
 
@@ -30,6 +34,8 @@ class PlayerService():
         bot = None
         if type == 'RAND':
             bot = RandomBot(player_id, self.env_actions)
+        elif type == 'BOT':
+            bot = None
         p = Player(player_id, bot)
         self.players.append(p)
 
@@ -46,11 +52,6 @@ class Environment():
         self.player_svc = PlayerService(
             config.players_config, len(list(Action)))
         self.engine = GameEngine(self.map, self.player_svc, config.max_turns)
-        self.players = []
-
-    # Initialization function - load players to system
-    def _init_load_players(self) -> bool:
-        pass
 
     # Get current frame for environemnt
     def get_frame(self) -> GameFrame:

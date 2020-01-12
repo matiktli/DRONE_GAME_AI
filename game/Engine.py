@@ -30,6 +30,7 @@ Game state representation dto
 class GameFrame():
 
     def __init__(self, map: GameMap):
+        self.player_available_actions = list(Action)
         self.map = map
 
 
