@@ -11,10 +11,10 @@ Player representation object
 
 class Player():
 
-    def __init__(self, player_id, bot: Bot):
+    def __init__(self, player_id, bot: Bot, drone_no):
         self.player_id = player_id
         self.bot = bot
-        self.drones = []
+        self.drone_no = drone_no
 
 
 """
@@ -28,15 +28,17 @@ class PlayerService():
         self.players = []
         self.env_actions = env_actions
         for p in players_config:
-            self.__add_player(int(p['id']), str(p['type']), p['path'])
+            self.__add_player(int(p['id']), str(
+                p['type']), int(p['drone_no']), p['path'])
 
-    def __add_player(self, player_id: int, type: str, path: str = None):
+    def __add_player(self, player_id: int, p_type: str, drone_no: int, path: str = None):
         bot = None
-        if type == 'RAND':
+        if p_type == 'RAND':
             bot = RandomBot(player_id, self.env_actions)
-        elif type == 'BOT':
+        elif p_type == 'BOT':
             bot = None
-        p = Player(player_id, bot)
+        p = Player(player_id, bot, drone_no)
+        print(f'Added player with id: {player_id} and type: {p_type} [{path}]')
         self.players.append(p)
 
 
@@ -69,4 +71,5 @@ class Environment():
         # Add and perform environment actions/outcomes
         self.engine.add_environment_actions_to_query()
         self.engine.perform_actions_in_query()
+        self.engine.end_turn()
         return self.engine.get_state()['is_on']

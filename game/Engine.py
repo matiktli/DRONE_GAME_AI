@@ -63,6 +63,9 @@ class GameAction():
         assert self.is_move()
         return (self.drone_position[0] + self.action['vector'][0], self.drone_position[1] + self.action['vector'][1])
 
+    def __str__(self):
+        return f'Player_id: {self.player_id}, Drone_id: {self.drone_id}, Drone_pos: {self.drone_position}, Action: {self.action}'
+
 
 """
 MAIN Game engine.
@@ -78,6 +81,15 @@ class GameEngine():
         self.game_map = game_map
         self.utils = GameEngineUtils()
         self.player_service = player_service
+        self.__initialise_drones()
+        print(
+            f"""Initialised game engine with stats: 
+            -Max Turns: {self.max_turns}
+            -No Players: {len(self.player_service.players)}
+            -No Moves: {self.player_service.env_actions} """)
+
+    def __initialise_drones(self):
+        return self.utils.initialise_drone_positions_for_players(self.game_map, self.player_service.players)
 
     # Add single drone action to query (for each drone in each player)
     def add_action_to_query(self, game_action: GameAction):
@@ -106,6 +118,11 @@ class GameEngine():
     # {'is_on': bool}
     def get_state(self) -> object:
         return {'is_on': self.cur_turn <= self.max_turns}
+
+    def end_turn(self):
+        tmp = self.cur_turn
+        self.cur_turn = tmp + 1
+        return self.cur_turn
 
 
 """
@@ -158,17 +175,17 @@ class GameEngineUtils():
         assert game_action.is_move()
         # Valid new positions
         new_position = self.__calculate_new_position(
-            game_action.drone_position, game_action.action['vector'], game_map.size)
+            game_action.drone_position, game_action.action.value['vector'], game_map.size)
         drone, cell = self.__obtain_drone_from_cell(game_action.player_id,
                                                     game_action.drone_id, game_action.drone_position, game_map)
         # Drone perform action - so losses energy
         drone.action_move()
-        is_dead = drone.get_state()
+        is_alive = drone.is_alive()
         # Map accepts movement besides of drone state, why not
         game_map.change_drone_position(
             drone.drone_id, game_action.drone_position, new_position)
 
-        if is_dead:
+        if not is_alive:
             # Remove drone from cell - so kill it
             new_cell = game_map.get_cell(new_position)
             new_cell.remove_drone(drone.drone_id)
@@ -177,6 +194,7 @@ class GameEngineUtils():
     # Logic responsible for valid special actions of drone
     def __perform_action_special(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_special()
+        pass  # ONLY TMP (!!!)
         drone, cell = self.__obtain_drone_from_cell(
             game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
 
@@ -187,15 +205,16 @@ class GameEngineUtils():
         # Stay action
         if game_action.action == Action.STAY:
             drone.action_stay()
-        is_dead = drone.get_state()
+        is_alive = drone.is_alive()
 
-        if is_dead:
+        if not is_alive:
             cell.remove_drone(drone.drone_id)
         return game_map
 
     # Login responsible for performing env decided actions
     def __perform_env_action(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_env()
+        pass  # ONLY TMP (!!!)
         drone, cell = self.__obtain_drone_from_cell(
             game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
 
@@ -220,3 +239,12 @@ class GameEngineUtils():
         if game_action.is_env():
             game_map = self.__perform_env_action(game_action, game_map)
         return game_map
+
+    def initialise_drone_positions_for_players(self, game_map: GameMap, players):
+        for player in players:
+            for i in range(0, player.drone_no):
+                new_drone = Drone(player.player_id, f'{player.player_id}_{i}')
+                init_pos = ((game_map.size[0]/2 + player.player_id),
+                            (game_map.size[1]/2 + player.player_id))
+                cell = game_map.get_cell(init_pos)
+                cell.add_drone(new_drone)
