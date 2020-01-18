@@ -144,7 +144,7 @@ class GameEngineUtils():
             action_vector[0], initial_position[1] + action_vector[1]
 
         # If new position is outside right
-        if new_raw_x > map_x_y[0]:
+        if new_raw_x >= map_x_y[0]:
             new_raw_x = int(new_raw_x % map_x_y[0])
         # If new position is outside left
         elif new_raw_x < 0:
@@ -157,6 +157,8 @@ class GameEngineUtils():
         elif new_raw_y < 0:
             new_raw_y = int(new_raw_y + map_x_y[1])
 
+        assert new_raw_x in range(0, map_x_y[0])
+        assert new_raw_y in range(0, map_x_y[1])
         return (new_raw_x, new_raw_y)
 
     # Obtain drone from cell with verifying player id, drone position and drone id.

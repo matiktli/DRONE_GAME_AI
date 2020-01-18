@@ -82,8 +82,7 @@ class GameMap():
     # With assumption that move is valid it changes the position of drone
     def change_drone_position(self, drone_id, current_position: tuple, new_position: tuple):
         assert new_position != current_position
-        assert new_position[0] in range(
-            0, self.size[0]) and new_position[1] in range(0, self.size[1])
+
         cell = self.get_cell(current_position)
         assert cell.is_occupied() == True
         drone = [drone for drone in cell.drones if drone.drone_id == drone_id]
