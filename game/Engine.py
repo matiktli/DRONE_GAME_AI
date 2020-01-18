@@ -80,6 +80,7 @@ class GameEngine():
         self.actions_query = []
         self.game_map = game_map
         self.utils = GameEngineUtils()
+        self.env_utils = EnvBrain()
         self.player_service = player_service
         self.__initialise_drones()
         print(
@@ -97,11 +98,11 @@ class GameEngine():
 
     # Add all environment decission actions to query (once a turn)
     def add_environment_actions_to_query(self):
-        for y in range(0, self.game_map.size[1]):
-            for x in range(0, self.game_map.size[0]):
-                game_env_action = None
-                cell = self.game_map.get_cell((x, y))
-                # TODO - decide how to add env actions
+        for cell in self.game_map.grid_flatten():
+            env_actions_on_cell = self.env_utils.make_env_decission_for_cell(
+                cell, self.game_map)
+            for env_action in env_actions_on_cell:
+                self.add_action_to_query(env_action)
 
     # For each action in query perform given move with including game logic (end of turn)
     def perform_actions_in_query(self, clean=True):
@@ -117,7 +118,9 @@ class GameEngine():
     # Returns state of engine:
     # {'is_on': bool}
     def get_state(self) -> object:
-        return {'is_on': self.cur_turn <= self.max_turns}
+        is_turn_max_limit = self.cur_turn >= self.max_turns
+        is_one_player_left = len(self.game_map.get_drones()) == 1
+        return {'is_on': not is_turn_max_limit and not is_one_player_left}
 
     def end_turn(self):
         tmp = self.cur_turn
@@ -151,7 +154,7 @@ class GameEngineUtils():
             new_raw_x = int(new_raw_x + map_x_y[0])
 
         # If new position is outside up
-        if new_raw_y > map_x_y[1]:
+        if new_raw_y >= map_x_y[1]:
             new_raw_y = int(new_raw_y % map_x_y[1])
         # If new position is outside down
         elif new_raw_y < 0:
@@ -252,3 +255,41 @@ class GameEngineUtils():
                             (game_map.size[1]/2 + player.player_id))
                 cell = game_map.get_cell(init_pos)
                 cell.add_drone(new_drone)
+
+
+class EnvBrain():
+
+    def __init__(self):
+        pass
+
+    def make_env_decission_for_cell(self, cell: Cell, game_map: GameMap, curr_pos=(0, 0)) -> []:
+        env_cell_actions = []
+
+        # Check for attack actions
+        attact_game_actions = self.__decide_if_env_attack_actions(
+            cell, game_map, curr_pos)
+        env_cell_actions.extend(attact_game_actions)
+
+        # Check for merge actions
+        merge_game_actions = self.__decide_if_env_merge_actions(
+            cell, game_map, curr_pos)
+        env_cell_actions.extend(merge_game_actions)
+
+        # Check for detonate actions
+        detonate_game_actions = self.__decide_if_env_detonate_actions(
+            cell, game_map, curr_pos)
+        env_cell_actions.extend(detonate_game_actions)
+
+        return env_cell_actions
+
+    def __decide_if_env_attack_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple):
+        if cell.is_occupied():
+            for drone in cell.drones:
+                pass
+        return []
+
+    def __decide_if_env_merge_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple):
+        return []
+
+    def __decide_if_env_detonate_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple):
+        return []

@@ -35,6 +35,16 @@ class Cell():
                 return True
         return False
 
+    def get_drones(self):
+        drones = {}
+        if not self.is_occupied():
+            return drones
+        for drone in self.drones:
+            if str(drone.player_id) not in drones:
+                drones[str(drone.player_id)] = []
+            drones[str(drone.player_id)].append(drone)
+        return drones
+
 
 """
 Game map representing 2D Grid
@@ -95,22 +105,17 @@ class GameMap():
         cell.remove_drone(drone.drone_id)
         assert self.get_cell(drone.drone_id) == self.get_cell(new_position)
 
+    def grid_flatten(self):
+        return self.grid.flatten()
+
     # Return drones wrapper for callculation purposes {'<player_id>': Drones[]}
     def get_drones(self) -> object:
         drones = {}
-        for cell in self.grid.ravel():
-            if cell.is_occupied():
-                for drone in cell.drones:
-                    if drone.player_id not in drones:
-                        drones[drone.player_id] = []
-                    drones[str(drone.player_id)].append(drone)
+        for cell in self.grid_flatten():
+            drones_in_cell = cell.get_drones()
+            for owner_id in drones_in_cell:
+                if owner_id not in drones:
+                    drones[owner_id] = []
+                for d in drones_in_cell[owner_id]:
+                    drones[owner_id].append(d)
         return drones
-
-    def for_each_cell_do(self, function, params: []):
-        for y in range(self.size[1]):
-            for x in range(self.size[0]):
-                curent_cell = self.get_cell((x, y))
-                function(curent_cell, params)
-
-    def grid_flatten(self):
-        return self.grid.flatten()
