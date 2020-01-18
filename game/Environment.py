@@ -71,5 +71,5 @@ class Environment():
         # Add and perform environment actions/outcomes
         self.engine.add_environment_actions_to_query()
         self.engine.perform_actions_in_query()
-        self.engine.end_turn()
+        self.engine.increment_turn_counter()
         return self.engine.get_state()['is_on']

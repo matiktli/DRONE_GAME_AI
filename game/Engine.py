@@ -122,7 +122,7 @@ class GameEngine():
         is_one_player_left = len(self.game_map.get_drones()) == 1
         return {'is_on': not is_turn_max_limit and not is_one_player_left}
 
-    def end_turn(self):
+    def increment_turn_counter(self):
         tmp = self.cur_turn
         self.cur_turn = tmp + 1
         return self.cur_turn
@@ -171,7 +171,8 @@ class GameEngineUtils():
         drone: Drone = next(
             (d for d in cell.drones if d.drone_id == drone_id), None)
         assert drone != None
-        assert player_id == drone.player_id or player_id == 'ENV'
+        assert int(player_id) == int(
+            drone.player_id) or str(player_id) == 'ENV'
         return drone, cell
 
     # Logic responsible for valid movement of drone
@@ -282,14 +283,20 @@ class EnvBrain():
 
         return env_cell_actions
 
-    def __decide_if_env_attack_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple):
-        if cell.is_occupied():
-            for drone in cell.drones:
-                pass
+    def __decide_if_env_attack_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple) -> []:
+        drones = cell.get_drones()
+        if len(drones) <= 1:
+            return []
+        result_actions = []
+        for owner_id in drones:
+            for drone in drones[owner_id]:
+                action = GameAction(owner_id, drone.drone_id,
+                                    cell.position, EnvAction.ATTACK)
+                result_actions.append(action)
+        return result_actions
+
+    def __decide_if_env_merge_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple) -> []:
         return []
 
-    def __decide_if_env_merge_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple):
-        return []
-
-    def __decide_if_env_detonate_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple):
+    def __decide_if_env_detonate_actions(self, cell: Cell, game_map: GameMap, curr_pos: tuple) -> []:
         return []
