@@ -9,6 +9,7 @@ is_print = True
 
 config = Config(config_path)
 env = Environment(config)
+# TODO_5 - data logger/collector
 # Play a game
 input('To start game press [any] key...')
 keep_playing = True

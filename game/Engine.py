@@ -232,6 +232,8 @@ class GameEngineUtils():
 
     # Public function to interact with env (map)
     def perform_action_on_env(self, game_action: GameAction, game_map: GameMap) -> GameMap:
+        print(
+            f'[ENGINE: PERFORM]: {game_action.player_id} -> {game_action.drone_id} -> {game_action.action}')
         if game_action.is_move():
             game_map = self.__perform_action_move(game_action, game_map)
         if game_action.is_special():

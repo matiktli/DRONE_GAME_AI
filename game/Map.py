@@ -94,8 +94,6 @@ class GameMap():
         new_cell.add_drone(drone)
 
         cell.remove_drone(drone.drone_id)
-        print(
-            f'Moving {drone.drone_id} from: {current_position} -> {new_position}')
         assert self.get_cell(drone.drone_id) == self.get_cell(new_position)
 
     # Return drones wrapper for callculation purposes {'<player_id>': Drones[]}
