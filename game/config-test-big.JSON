@@ -9,7 +9,7 @@
       "type": "RAND",
       "path": "",
       "drone_no": 60,
-      "allowed_actions": [0, 1, 2, 3, 4, 5]
+      "allowed_actions": [0, 1, 2, 3, 4]
     },
     {
       "id": 1,
@@ -23,7 +23,7 @@
       "type": "RAND",
       "path": "",
       "drone_no": 60,
-      "allowed_actions": [0, 1, 2, 3, 5]
+      "allowed_actions": [0, 1, 2, 3, 4]
     }
   ]
 }
