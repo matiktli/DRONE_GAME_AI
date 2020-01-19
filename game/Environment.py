@@ -5,16 +5,30 @@ from typing import List
 from Bot import Bot, RandomBot
 
 """
-Player representation object 
+Player representation object
 """
 
 
 class Player():
 
-    def __init__(self, player_id, bot: Bot, drone_no):
+    def __init__(self, player_id, bot: Bot, drone_no, allowed_actions_ids=None):
         self.player_id = player_id
         self.bot = bot
+        self.allowed_actions_ids = allowed_actions_ids
         self.drone_no = drone_no
+
+
+class DroneIdGenerator():
+
+    def __init__(self, players_no):
+        self.ids_generator = [0 for num in range(0, players_no)]
+        pass
+
+    def get_new_drone_id(self, player_id) -> str:
+        curr_id = self.ids_generator[int(player_id)]
+        new_id = curr_id + 1
+        self.ids_generator[int(player_id)] = new_id
+        return str(player_id) + '_' + str(new_id)
 
 
 """
@@ -27,18 +41,25 @@ class PlayerService():
     def __init__(self, players_config, env_actions):
         self.players = []
         self.env_actions = env_actions
+        self.drone_id_generator = DroneIdGenerator(len(players_config))
         for p in players_config:
             self.__add_player(int(p['id']), str(
-                p['type']), int(p['drone_no']), p['path'])
+                p['type']), int(p['drone_no']), p['path'], p['allowed_actions'])
 
-    def __add_player(self, player_id: int, p_type: str, drone_no: int, path: str = None):
+    def __add_player(self, player_id: int, p_type: str, drone_no: int, path: str = None, allowed_actions_config=None):
         bot = None
+        actions = []
+        for act_id in allowed_actions_config:
+            for act in Action:
+                if str(act.value['id']) == str(act_id):
+                    actions.append(act)
         if p_type == 'RAND':
-            bot = RandomBot(player_id, self.env_actions)
+            bot = RandomBot(player_id, actions)
         elif p_type == 'BOT':
             bot = None
         p = Player(player_id, bot, drone_no)
-        print(f'Added player with id: {player_id} and type: {p_type} [{path}]')
+        print(
+            f'Added player with id: {player_id} and type: {p_type} [{path}] and actions: {list(map(lambda a: a.value["id"], actions))}')
         self.players.append(p)
 
 

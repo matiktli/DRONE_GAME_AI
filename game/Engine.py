@@ -10,6 +10,7 @@ class Action(Enum):
     MOVE_DOWN = {'id': 1, 'vector': (0, -1)}
     MOVE_LEFT = {'id': 2, 'vector': (-1, 0)}
     MOVE_RIGHT = {'id': 3, 'vector': (1, 0)}
+
     STAY = {'id': 4, 'vector': (0, 0)}
     DUPLICATE = {'id': 5, 'vector': (0, 0)}
 
@@ -61,7 +62,7 @@ class GameAction():
         return self.action in [Action.STAY, Action.DUPLICATE]
 
     def is_env(self):
-        return self.action in [EnvAction.ATTACK, EnvAction.DETONATE]
+        return self.action in [EnvAction.ATTACK, EnvAction.DETONATE, EnvAction.KILL, EnvAction.MERGE]
 
     # Bad implementation
     def __get_new_position(self):
@@ -84,11 +85,12 @@ class GameEngine():
     def __init__(self, game_map: GameMap, player_service, max_turns=100):
         self.cur_turn = 0
         self.max_turns = max_turns
+        self.player_service = player_service
         self.actions_query = []
         self.game_map = game_map
         self.env_utils = EnvActionUtils()
-        self.utils = GameEngineUtils(self.env_utils)
-        self.player_service = player_service
+        self.utils = GameEngineUtils(
+            self.env_utils, self.player_service.drone_id_generator)
         self.__initialise_drones()
         print(
             f"""Initialised game engine with stats: 
@@ -97,7 +99,7 @@ class GameEngine():
             -No Moves: {self.player_service.env_actions} """)
 
     def __initialise_drones(self):
-        return self.utils.initialise_drone_positions_for_players(self.game_map, self.player_service.players)
+        return self.utils.initialise_drone_positions_for_players(self.game_map, self.player_service.players, self.player_service.drone_id_generator)
 
     # Add single drone action to query (for each drone in each player)
     def add_action_to_query(self, game_action: GameAction):
@@ -152,9 +154,9 @@ Utility class for game engine. 'Physics' maintainer.
 
 class GameEngineUtils():
 
-    def __init__(self, env_utils):
+    def __init__(self, env_utils, drone_id_generator):
         self.env_utils = env_utils
-        pass
+        self.drone_id_generator = drone_id_generator
 
     # Calculate new position with RESPECTING game engine, end of maps are connected as default
     def __calculate_new_position(self, initial_position: tuple, action_vector: tuple, map_x_y: tuple) -> tuple:
@@ -204,15 +206,9 @@ class GameEngineUtils():
                                                     game_action.drone_id, game_action.drone_position, game_map)
         # Drone perform action - so losses energy
         drone.action_move()
-        is_alive = drone.is_alive()
         # Map accepts movement besides of drone state, why not
         game_map.change_drone_position(
             drone.drone_id, game_action.drone_position, new_position)
-
-        if not is_alive:
-            # Remove drone from cell - so kill it
-            new_cell = game_map.get_cell(new_position)
-            new_cell.remove_drone(drone.drone_id)
         return game_map
 
     # Logic responsible for valid special actions of drone
@@ -225,44 +221,47 @@ class GameEngineUtils():
         # Duplicate action
         if game_action.action == Action.DUPLICATE:
             drone.action_duplicate()
-            # TODO - id_generator -> spawn new drone
+            new_drone_id = self.drone_id_generator.get_new_drone_id(
+                game_action.player_id)
+            new_drone = Drone(game_action.player_id, new_drone_id,
+                              drone.energy, drone.energy_bandwidth)
+            spawn_position = cell.position + \
+                self.__calculate_new_position(
+                    cell.position, (0, -1), game_map.size)
+            new_cell = game_map.get_cell(spawn_position)
+            assert new_cell
+            new_cell.add_drone(new_drone)
         # Stay action
         if game_action.action == Action.STAY:
             drone.action_stay()
-        is_alive = drone.is_alive()
-
-        if not is_alive:
-            cell.remove_drone(drone.drone_id)
         return game_map
 
     # Login responsible for performing env decided actions
     def __perform_env_action(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_env()
-        game_action
-
         if game_action.action == EnvAction.KILL and game_action.drone_id == 'ENV':
             game_map = self.env_utils.perform_env_kill_all(game_map)
         elif game_action == EnvAction.KILL:
             game_map = self.env_utils.perform_env_kill_single(
-                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+                game_action.player_id, game_action.drone_id, game_map)
 
         if game_action.action == EnvAction.ATTACK and game_action.drone_id == 'ENV':
             game_map = self.env_utils.perform_env_attack_all(game_map)
         elif game_action == EnvAction.ATTACK:
             game_map = self.env_utils.perform_env_attack_single(
-                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+                game_action.player_id, game_action.drone_id, game_map)
 
         if game_action.action == EnvAction.MERGE and game_action.drone_id == 'ENV':
             game_map = self.env_utils.perform_env_merge_all(game_map)
         elif game_action == EnvAction.MERGE:
             game_map = self.env_utils.perform_env_merge_single(
-                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+                game_action.player_id, game_action.drone_id, game_map)
 
         if game_action.action == EnvAction.DETONATE and game_action.drone_id == 'ENV':
             game_map = self.env_utils.perform_env_detonate_all(game_map)
         elif game_action == EnvAction.DETONATE:
             game_map = self.env_utils.perform_env_detonate_single(
-                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+                game_action.player_id, game_action.drone_id, game_map)
 
         return game_map
 
@@ -271,17 +270,22 @@ class GameEngineUtils():
         print(
             f'[ENGINE: performing]: Player: {game_action.player_id} | Drone: {game_action.drone_id} | Action: {game_action.action}')
         if game_action.is_move():
-            game_map = self.__perform_action_move(game_action, game_map)
+            game_map = self.__perform_action_move(
+                game_action, game_map)
         elif game_action.is_special():
-            game_map = self.__perform_action_special(game_action, game_map)
+            game_map = self.__perform_action_special(
+                game_action, game_map)
         elif game_action.is_env():
-            game_map = self.__perform_env_action(game_action, game_map)
+            game_map = self.__perform_env_action(
+                game_action, game_map)
         return game_map
 
-    def initialise_drone_positions_for_players(self, game_map: GameMap, players):
+    def initialise_drone_positions_for_players(self, game_map: GameMap, players, drone_id_generator):
         for player in players:
-            for i in range(0, player.drone_no):
-                new_drone = Drone(player.player_id, f'{player.player_id}_{i}')
+            for _ in range(0, player.drone_no):
+                new_drone_id = drone_id_generator.get_new_drone_id(
+                    player.player_id)
+                new_drone = Drone(player.player_id, new_drone_id)
                 init_pos = ((game_map.size[0]/2 + player.player_id),
                             (game_map.size[1]/2 + player.player_id))
                 cell = game_map.get_cell(init_pos)
@@ -293,50 +297,66 @@ class EnvActionUtils():
     def __init__(self):
         pass
 
-    def perform_env_kill_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+    def perform_env_kill_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:
+        assert '_' in drone_id
         cell = game_map.get_cell(drone_id)
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+            print(
+                f"""(?)\t- Drone: {drone_id} was NOT killed in cell: {cell.position}""")
             return game_map
-        # TODO impl env kill single
+        for drone in cell.drones:
+            d_id = drone.drone_id
+            if d_id == drone_id:
+                if not drone.is_alive():
+                    removed = cell.remove_drone(d_id)
+                    assert removed
+                    print(
+                        f"""\t- Drone: {drone_id} was killed in cell: {cell.position}""")
+                    return game_map
         return game_map
 
     def perform_env_kill_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env kill all
+        drones = game_map.get_drones()
+        for owner_id in drones:
+            player_drones = drones[owner_id]
+            for drone in player_drones:
+                game_map = self.perform_env_kill_single(
+                    'ENV', drone.drone_id, game_map)
         return game_map
 
-    def perform_env_attack_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+    def perform_env_attack_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:
         cell = game_map.get_cell(drone_id)
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
             return game_map
-        # TODO impl env attack single
+        # TODO attack single
         return game_map
 
     def perform_env_attack_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env attack all
+        # TODO attack all
         return game_map
 
-    def perform_env_merge_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+    def perform_env_merge_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:
         cell = game_map.get_cell(drone_id)
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
             return game_map
-        # TODO impl env merge single
+        # TODO merge single
         return game_map
 
     def perform_env_merge_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env merge all
+        # TODO merge all
         return game_map
 
-    def perform_env_detonate_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+    def perform_env_detonate_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:
         cell = game_map.get_cell(drone_id)
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
             return game_map
-        # TODO impl env detonate all
+        # TODO detonate all
         return game_map
 
     def perform_env_detonate_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env detonate all
+        # TODO detonate all
         return game_map
