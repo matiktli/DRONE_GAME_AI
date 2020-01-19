@@ -15,6 +15,8 @@ class DataVisualiser():
             if 'y' in label:
                 plt.plot('x', label, data=df,
                          color=DataVisualiser.COLORS[int(label.replace('y', '')) % (len(DataVisualiser.COLORS))], label=label.replace('y', 'Bot: '), linewidth=2)
+        plt.title(
+            f'Simulation with: {len(data)-1} bots making random decissions')
         plt.legend()
         plt.show()
 
