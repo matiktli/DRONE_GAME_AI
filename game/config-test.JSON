@@ -1,11 +1,13 @@
 {
-  "game.map.size_x": 50,
-  "game.map.size_y": 50,
-  "game.max_turns": 30,
-  "game.players_no": 3,
+  "game.map.size_x": 100,
+  "game.map.size_y": 100,
+  "game.max_turns": 50,
+  "game.players_no": 5,
   "players": [
-    { "id": 0, "type": "RAND", "path": "", "drone_no": 20, "allowed_actions": [0, 1, 2, 3]},
-    { "id": 1, "type": "RAND", "path": "", "drone_no": 20, "allowed_actions": [0, 1, 2, 3, 4, 5]},
-    { "id": 2, "type": "RAND", "path": "", "drone_no": 20, "allowed_actions": [0, 1, 2, 3, 4, 5]}
+    { "id": 0, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3]},
+    { "id": 1, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3, 4, 5]},
+    { "id": 2, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3, 4, 5]},
+    { "id": 3, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3, 4, 5]},
+    { "id": 4, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [4, 5]}
   ]
 }

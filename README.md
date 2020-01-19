@@ -71,3 +71,8 @@ Game and can be done by:
     {
 
     }
+
+## Progress fotage:
+
+- Early try with 5 Random bots. (Bot 0 & Bot 1 aviable actions are modified)
+  ![](.git_examples/early_work_random_bots.png)
