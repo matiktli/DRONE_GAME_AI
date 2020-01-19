@@ -35,5 +35,4 @@ class DataVisualiser():
                 for player_id in d_frame.drones:
                     p_drones = d_frame.drones[player_id]
                     data['y' + player_id][int(turn_id)] = len(p_drones)
-                    # TODO plot data after game
         self.__plot_data(data)

@@ -18,6 +18,19 @@ class Player():
         self.drone_no = drone_no
 
 
+class DroneIdGenerator():
+
+    def __init__(self, players_no):
+        self.ids_generator = [0 for num in range(0, players_no)]
+        pass
+
+    def get_new_drone_id(self, player_id) -> str:
+        curr_id = self.ids_generator[int(player_id)]
+        new_id = curr_id + 1
+        self.ids_generator[int(player_id)] = new_id
+        return str(player_id) + '_' + str(new_id)
+
+
 """
 Player maintainer service
 """
@@ -28,6 +41,7 @@ class PlayerService():
     def __init__(self, players_config, env_actions):
         self.players = []
         self.env_actions = env_actions
+        self.drone_id_generator = DroneIdGenerator(len(players_config))
         for p in players_config:
             self.__add_player(int(p['id']), str(
                 p['type']), int(p['drone_no']), p['path'], p['allowed_actions'])

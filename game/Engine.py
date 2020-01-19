@@ -98,7 +98,7 @@ class GameEngine():
             -No Moves: {self.player_service.env_actions} """)
 
     def __initialise_drones(self):
-        return self.utils.initialise_drone_positions_for_players(self.game_map, self.player_service.players)
+        return self.utils.initialise_drone_positions_for_players(self.game_map, self.player_service.players, self.player_service.drone_id_generator)
 
     # Add single drone action to query (for each drone in each player)
     def add_action_to_query(self, game_action: GameAction):
@@ -274,10 +274,13 @@ class GameEngineUtils():
                 game_action, game_map)
         return game_map
 
-    def initialise_drone_positions_for_players(self, game_map: GameMap, players):
+    def initialise_drone_positions_for_players(self, game_map: GameMap, players, drone_id_generator):
         for player in players:
-            for i in range(0, player.drone_no):
-                new_drone = Drone(player.player_id, f'{player.player_id}_{i}')
+            for _ in range(0, player.drone_no):
+                new_drone_id = drone_id_generator.get_new_drone_id(
+                    player.player_id)
+                print(f'--> For player {player.player_id} -- {new_drone_id}')
+                new_drone = Drone(player.player_id, new_drone_id)
                 init_pos = ((game_map.size[0]/2 + player.player_id),
                             (game_map.size[1]/2 + player.player_id))
                 cell = game_map.get_cell(init_pos)
