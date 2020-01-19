@@ -85,11 +85,12 @@ class GameEngine():
     def __init__(self, game_map: GameMap, player_service, max_turns=100):
         self.cur_turn = 0
         self.max_turns = max_turns
+        self.player_service = player_service
         self.actions_query = []
         self.game_map = game_map
         self.env_utils = EnvActionUtils()
-        self.utils = GameEngineUtils(self.env_utils)
-        self.player_service = player_service
+        self.utils = GameEngineUtils(
+            self.env_utils, self.player_service.drone_id_generator)
         self.__initialise_drones()
         print(
             f"""Initialised game engine with stats: 
@@ -153,9 +154,9 @@ Utility class for game engine. 'Physics' maintainer.
 
 class GameEngineUtils():
 
-    def __init__(self, env_utils):
+    def __init__(self, env_utils, drone_id_generator):
         self.env_utils = env_utils
-        pass
+        self.drone_id_generator = drone_id_generator
 
     # Calculate new position with RESPECTING game engine, end of maps are connected as default
     def __calculate_new_position(self, initial_position: tuple, action_vector: tuple, map_x_y: tuple) -> tuple:
@@ -220,11 +221,16 @@ class GameEngineUtils():
         # Duplicate action
         if game_action.action == Action.DUPLICATE:
             drone.action_duplicate()
-            # duplicate logic, poor one TMP
-            drone_ids = list(map(lambda drone: drone.drone_id.split('_')[1], game_map.get_cell(
-                drone.drone_id).get_drones()[str(drone.player_id)]))
-            drone_ids = drone_ids.sort()
-
+            new_drone_id = self.drone_id_generator.get_new_drone_id(
+                game_action.player_id)
+            new_drone = Drone(game_action.player_id, new_drone_id,
+                              drone.energy, drone.energy_bandwidth)
+            spawn_position = cell.position + \
+                self.__calculate_new_position(
+                    cell.position, (0, -1), game_map.size)
+            new_cell = game_map.get_cell(spawn_position)
+            assert new_cell
+            new_cell.add_drone(new_drone)
         # Stay action
         if game_action.action == Action.STAY:
             drone.action_stay()

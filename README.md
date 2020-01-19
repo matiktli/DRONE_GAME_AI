@@ -76,3 +76,6 @@ Game and can be done by:
 
 - Early try with 5 Random bots. (Bot 0 & Bot 1 aviable actions are modified)
   ![](.git_examples/early_work_random_bots.png)
+
+- Early try with 5 Random bots. (Bot 0 & Bot 1 aviable actions are modified)
+  ![](.git_examples/early_work_random_bots_with_duplication_impl.png)
