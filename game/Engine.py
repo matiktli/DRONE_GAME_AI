@@ -220,7 +220,7 @@ class GameEngineUtils():
         # Duplicate action
         if game_action.action == Action.DUPLICATE:
             drone.action_duplicate()
-            # TODO - id_generator -> spawn new drone
+            # TODO duplicate
         # Stay action
         if game_action.action == Action.STAY:
             drone.action_stay()
@@ -318,11 +318,11 @@ class EnvActionUtils():
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
             return game_map
-        # TODO impl env attack single
+        # TODO attack single
         return game_map
 
     def perform_env_attack_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env attack all
+        # TODO attack all
         return game_map
 
     def perform_env_merge_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:
@@ -330,11 +330,11 @@ class EnvActionUtils():
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
             return game_map
-        # TODO impl env merge single
+        # TODO merge single
         return game_map
 
     def perform_env_merge_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env merge all
+        # TODO merge all
         return game_map
 
     def perform_env_detonate_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:
@@ -342,9 +342,9 @@ class EnvActionUtils():
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
             return game_map
-        # TODO impl env detonate- all
+        # TODO detonate all
         return game_map
 
     def perform_env_detonate_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env detonate all
+        # TODO detonate all
         return game_map
