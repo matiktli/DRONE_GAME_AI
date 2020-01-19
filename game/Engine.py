@@ -260,11 +260,14 @@ class GameEngineUtils():
         print(
             f'[ENGINE: performing]: Player: {game_action.player_id} | Drone: {game_action.drone_id} | Action: {game_action.action}')
         if game_action.is_move():
-            game_map = self.__perform_action_move(game_action, game_map)
+            game_map = self.__perform_action_move(
+                game_action, game_map)
         elif game_action.is_special():
-            game_map = self.__perform_action_special(game_action, game_map)
+            game_map = self.__perform_action_special(
+                game_action, game_map)
         elif game_action.is_env():
-            game_map = self.__perform_env_action(game_action, game_map)
+            game_map = self.__perform_env_action(
+                game_action, game_map)
         return game_map
 
     def initialise_drone_positions_for_players(self, game_map: GameMap, players):
@@ -290,7 +293,6 @@ class EnvActionUtils():
             print(
                 f"""(?)\t- Drone: {drone_id} was NOT killed in cell: {cell.position}""")
             return game_map
-        # TODO impl env kill single
         for drone in cell.drones:
             d_id = drone.drone_id
             if d_id == drone_id:
@@ -303,7 +305,6 @@ class EnvActionUtils():
         return game_map
 
     def perform_env_kill_all(self, game_map: GameMap) -> GameMap:
-        # TODO impl env kill all
         drones = game_map.get_drones()
         for owner_id in drones:
             player_drones = drones[owner_id]
