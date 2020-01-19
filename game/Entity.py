@@ -40,5 +40,8 @@ class Drone():
         self.energy = self.energy - energy_damage
         self.__optymise_energy()
 
-    def get_state(self) -> bool:
-        return self.__optymise_energy()
+    def is_alive(self) -> bool:
+        result = self.__optymise_energy()
+        if not result:
+            print(f'Drone: {self.drone_id} just died')
+        return result

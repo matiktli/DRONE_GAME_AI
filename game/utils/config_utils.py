@@ -29,7 +29,8 @@ def config_creation_wizard():
         player_info = {
             'id': i,
             'type': player_type,
-            'path': path
+            'path': path,
+            'drone_no': number_of_drones_per_player
         }
         players_info.append(player_info)
 
@@ -38,7 +39,6 @@ def config_creation_wizard():
         'game.map.size_y': map_size_y,
         'game.max_turns': max_turns,
         'game.players_no': number_of_players,
-        'game.drones_per_player_no': number_of_drones_per_player,
         'players': players_info
     }
     save_config(config_file_name, json_file)
@@ -58,7 +58,6 @@ class Config():
                          int(raw_data['game.map.size_y']))
         self.max_turns = int(raw_data['game.max_turns'])
         self.number_of_players = int(raw_data['game.players_no'])
-        self.drones_per_player = int(raw_data['game.drones_per_player_no'])
         self.players_config = raw_data['players']
 
 

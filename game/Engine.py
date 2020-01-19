@@ -15,11 +15,18 @@ class Action(Enum):
 
 
 class EnvAction(Enum):
-    # When two or more drones are at the same cell
+    # When two or more drones are at the same cell (from not the same player) - they fight
     ATTACK = {'id': 100}
 
     # When drone is surrounded by at least 3 oponent drones and is only drone in cell
     DETONATE = {'id': 101}
+
+    # When two or more drone are at the cell (from the same player)
+    # - they merge into one (there can not be enemy drones in area of `distance` from cell)
+    MERGE = {'id': 102, 'distance': 1}
+
+    # Send message to kill drone
+    KILL = {'id': 103}
 
 
 """
@@ -63,6 +70,9 @@ class GameAction():
         assert self.is_move()
         return (self.drone_position[0] + self.action['vector'][0], self.drone_position[1] + self.action['vector'][1])
 
+    def __str__(self):
+        return f'Player_id: {self.player_id}, Drone_id: {self.drone_id}, Drone_pos: {self.drone_position}, Action: {self.action}'
+
 
 """
 MAIN Game engine.
@@ -76,8 +86,18 @@ class GameEngine():
         self.max_turns = max_turns
         self.actions_query = []
         self.game_map = game_map
-        self.utils = GameEngineUtils()
+        self.env_utils = EnvActionUtils()
+        self.utils = GameEngineUtils(self.env_utils)
         self.player_service = player_service
+        self.__initialise_drones()
+        print(
+            f"""Initialised game engine with stats: 
+            -Max Turns: {self.max_turns}
+            -No Players: {len(self.player_service.players)}
+            -No Moves: {self.player_service.env_actions} """)
+
+    def __initialise_drones(self):
+        return self.utils.initialise_drone_positions_for_players(self.game_map, self.player_service.players)
 
     # Add single drone action to query (for each drone in each player)
     def add_action_to_query(self, game_action: GameAction):
@@ -85,11 +105,21 @@ class GameEngine():
 
     # Add all environment decission actions to query (once a turn)
     def add_environment_actions_to_query(self):
-        for y in range(0, self.game_map.size[1]):
-            for x in range(0, self.game_map.size[0]):
-                game_env_action = None
-                cell = self.game_map.get_cell((x, y))
-                # TODO - decide how to add env actions
+        env_actions_to_perform = []
+        env_actions_to_perform.append(
+            GameAction('ENV', 'ENV', (-1, -1), EnvAction.KILL)
+        )
+        env_actions_to_perform.append(
+            GameAction('ENV', 'ENV', (-1, -1), EnvAction.ATTACK)
+        )
+        env_actions_to_perform.append(
+            GameAction('ENV', 'ENV', (-1, -1), EnvAction.MERGE)
+        )
+        env_actions_to_perform.append(
+            GameAction('ENV', 'ENV', (-1, -1), EnvAction.DETONATE)
+        )
+        for env_action in env_actions_to_perform:
+            self.add_action_to_query(env_action)
 
     # For each action in query perform given move with including game logic (end of turn)
     def perform_actions_in_query(self, clean=True):
@@ -105,7 +135,14 @@ class GameEngine():
     # Returns state of engine:
     # {'is_on': bool}
     def get_state(self) -> object:
-        return {'is_on': self.cur_turn <= self.max_turns}
+        is_turn_max_limit = self.cur_turn >= self.max_turns
+        is_one_player_left = len(self.game_map.get_drones()) == 1
+        return {'is_on': not is_turn_max_limit and not is_one_player_left}
+
+    def increment_turn_counter(self):
+        tmp = self.cur_turn
+        self.cur_turn = tmp + 1
+        return self.cur_turn
 
 
 """
@@ -115,7 +152,8 @@ Utility class for game engine. 'Physics' maintainer.
 
 class GameEngineUtils():
 
-    def __init__(self):
+    def __init__(self, env_utils):
+        self.env_utils = env_utils
         pass
 
     # Calculate new position with RESPECTING game engine, end of maps are connected as default
@@ -127,19 +165,21 @@ class GameEngineUtils():
             action_vector[0], initial_position[1] + action_vector[1]
 
         # If new position is outside right
-        if new_raw_x > map_x_y[0]:
+        if new_raw_x >= map_x_y[0]:
             new_raw_x = int(new_raw_x % map_x_y[0])
         # If new position is outside left
         elif new_raw_x < 0:
             new_raw_x = int(new_raw_x + map_x_y[0])
 
         # If new position is outside up
-        if new_raw_y > map_x_y[1]:
+        if new_raw_y >= map_x_y[1]:
             new_raw_y = int(new_raw_y % map_x_y[1])
         # If new position is outside down
         elif new_raw_y < 0:
             new_raw_y = int(new_raw_y + map_x_y[1])
 
+        assert new_raw_x in range(0, map_x_y[0])
+        assert new_raw_y in range(0, map_x_y[1])
         return (new_raw_x, new_raw_y)
 
     # Obtain drone from cell with verifying player id, drone position and drone id.
@@ -149,7 +189,8 @@ class GameEngineUtils():
         drone: Drone = next(
             (d for d in cell.drones if d.drone_id == drone_id), None)
         assert drone != None
-        assert player_id == drone.player_id or player_id == 'ENV'
+        assert int(player_id) == int(
+            drone.player_id) or str(player_id) == 'ENV'
         return drone, cell
 
     # Logic responsible for valid movement of drone
@@ -158,17 +199,17 @@ class GameEngineUtils():
         assert game_action.is_move()
         # Valid new positions
         new_position = self.__calculate_new_position(
-            game_action.drone_position, game_action.action['vector'], game_map.size)
+            game_action.drone_position, game_action.action.value['vector'], game_map.size)
         drone, cell = self.__obtain_drone_from_cell(game_action.player_id,
                                                     game_action.drone_id, game_action.drone_position, game_map)
         # Drone perform action - so losses energy
         drone.action_move()
-        is_dead = drone.get_state()
+        is_alive = drone.is_alive()
         # Map accepts movement besides of drone state, why not
         game_map.change_drone_position(
             drone.drone_id, game_action.drone_position, new_position)
 
-        if is_dead:
+        if not is_alive:
             # Remove drone from cell - so kill it
             new_cell = game_map.get_cell(new_position)
             new_cell.remove_drone(drone.drone_id)
@@ -177,6 +218,7 @@ class GameEngineUtils():
     # Logic responsible for valid special actions of drone
     def __perform_action_special(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_special()
+        pass  # ONLY TMP (!!!)
         drone, cell = self.__obtain_drone_from_cell(
             game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
 
@@ -187,36 +229,114 @@ class GameEngineUtils():
         # Stay action
         if game_action.action == Action.STAY:
             drone.action_stay()
-        is_dead = drone.get_state()
+        is_alive = drone.is_alive()
 
-        if is_dead:
+        if not is_alive:
             cell.remove_drone(drone.drone_id)
         return game_map
 
     # Login responsible for performing env decided actions
     def __perform_env_action(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_env()
-        drone, cell = self.__obtain_drone_from_cell(
-            game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+        game_action
 
-        # Attack env action
-        if game_action.action == EnvAction.ATTACK:
-            # TODO - implement attack logic
-            enemy_drones = [(d)
-                            for d in cell.drones if d.player_id != drone.player_id]
+        if game_action.action == EnvAction.KILL and game_action.drone_id == 'ENV':
+            game_map = self.env_utils.perform_env_kill_all(game_map)
+        elif game_action == EnvAction.KILL:
+            game_map = self.env_utils.perform_env_kill_single(
+                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
 
-        # Detonate env action
-        if game_action.action == EnvAction.DETONATE:
-            # TODO - implement detonate logic
-            pass
+        if game_action.action == EnvAction.ATTACK and game_action.drone_id == 'ENV':
+            game_map = self.env_utils.perform_env_attack_all(game_map)
+        elif game_action == EnvAction.ATTACK:
+            game_map = self.env_utils.perform_env_attack_single(
+                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+
+        if game_action.action == EnvAction.MERGE and game_action.drone_id == 'ENV':
+            game_map = self.env_utils.perform_env_merge_all(game_map)
+        elif game_action == EnvAction.MERGE:
+            game_map = self.env_utils.perform_env_merge_single(
+                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+
+        if game_action.action == EnvAction.DETONATE and game_action.drone_id == 'ENV':
+            game_map = self.env_utils.perform_env_detonate_all(game_map)
+        elif game_action == EnvAction.DETONATE:
+            game_map = self.env_utils.perform_env_detonate_single(
+                game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
+
         return game_map
 
     # Public function to interact with env (map)
     def perform_action_on_env(self, game_action: GameAction, game_map: GameMap) -> GameMap:
+        print(
+            f'[ENGINE: performing]: Player: {game_action.player_id} | Drone: {game_action.drone_id} | Action: {game_action.action}')
         if game_action.is_move():
             game_map = self.__perform_action_move(game_action, game_map)
-        if game_action.is_special():
+        elif game_action.is_special():
             game_map = self.__perform_action_special(game_action, game_map)
-        if game_action.is_env():
+        elif game_action.is_env():
             game_map = self.__perform_env_action(game_action, game_map)
+        return game_map
+
+    def initialise_drone_positions_for_players(self, game_map: GameMap, players):
+        for player in players:
+            for i in range(0, player.drone_no):
+                new_drone = Drone(player.player_id, f'{player.player_id}_{i}')
+                init_pos = ((game_map.size[0]/2 + player.player_id),
+                            (game_map.size[1]/2 + player.player_id))
+                cell = game_map.get_cell(init_pos)
+                cell.add_drone(new_drone)
+
+
+class EnvActionUtils():
+
+    def __init__(self):
+        pass
+
+    def perform_env_kill_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+        cell = game_map.get_cell(drone_id)
+        if cell == None:
+            # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+            return game_map
+        # TODO impl env kill single
+        return game_map
+
+    def perform_env_kill_all(self, game_map: GameMap) -> GameMap:
+        # TODO impl env kill all
+        return game_map
+
+    def perform_env_attack_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+        cell = game_map.get_cell(drone_id)
+        if cell == None:
+            # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+            return game_map
+        # TODO impl env attack single
+        return game_map
+
+    def perform_env_attack_all(self, game_map: GameMap) -> GameMap:
+        # TODO impl env attack all
+        return game_map
+
+    def perform_env_merge_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+        cell = game_map.get_cell(drone_id)
+        if cell == None:
+            # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+            return game_map
+        # TODO impl env merge single
+        return game_map
+
+    def perform_env_merge_all(self, game_map: GameMap) -> GameMap:
+        # TODO impl env merge all
+        return game_map
+
+    def perform_env_detonate_single(self, player_id: str, drone_id: str, drone_position: tuple, game_map: GameMap) -> GameMap:
+        cell = game_map.get_cell(drone_id)
+        if cell == None:
+            # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+            return game_map
+        # TODO impl env detonate all
+        return game_map
+
+    def perform_env_detonate_all(self, game_map: GameMap) -> GameMap:
+        # TODO impl env detonate all
         return game_map

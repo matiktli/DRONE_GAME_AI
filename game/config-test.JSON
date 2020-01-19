@@ -1,0 +1,11 @@
+{
+  "game.map.size_x": 10,
+  "game.map.size_y": 10,
+  "game.max_turns": 10,
+  "game.players_no": 3,
+  "players": [
+    { "id": 0, "type": "RAND", "path": "", "drone_no": 10 },
+    { "id": 1, "type": "RAND", "path": "", "drone_no": 10 },
+    { "id": 2, "type": "RAND", "path": "", "drone_no": 10 }
+  ]
+}

@@ -14,15 +14,17 @@ class Cell():
         self.drones = drones
 
     # Returns if there is any ship inside the cell
-    def is_occupied(self, occupied_by: int = -1) -> bool:
-        result = self.drones != None
-        if occupied_by != -1:
+    def is_occupied(self, occupied_by=None) -> bool:
+        result = self.drones != None and len(self.drones) > 0
+        if occupied_by != None and result:
             result = result and occupied_by in [
-                int(d.drone_id) for d in self.drones]
+                d.drone_id for d in self.drones]
         return result
 
     def add_drone(self, drone: Drone):
         assert not self.is_occupied(drone.drone_id)
+        if self.drones == None:
+            self.drones = []
         self.drones.append(drone)
 
     def remove_drone(self, drone_id) -> bool:
@@ -32,6 +34,16 @@ class Cell():
                 del self.drones[i]
                 return True
         return False
+
+    def get_drones(self):
+        drones = {}
+        if not self.is_occupied():
+            return drones
+        for drone in self.drones:
+            if str(drone.player_id) not in drones:
+                drones[str(drone.player_id)] = []
+            drones[str(drone.player_id)].append(drone)
+        return drones
 
 
 """
@@ -43,7 +55,7 @@ class GameMap():
 
     def __init__(self, initial_size=(100, 100)):
         self.size = initial_size
-        self.grid = np.array(self.__initialise_grid(initial_size))
+        self.grid = np.asarray(self.__initialise_grid(initial_size))
 
     def __initialise_grid(self, size) -> []:
         grid = [[None for x in range(size[0])] for y in range(size[1])]
@@ -56,25 +68,31 @@ class GameMap():
 
     # Get cell by search that is either: tuple - position(x,y) or int - drone_id
     def get_cell(self, search) -> Cell:
-        assert self.grid != None
+        assert self.grid.any()
         if isinstance(search, tuple):
             # Get single cell by search: (x,y)
-            x, y = search[0], search[1]
+            x, y = int(search[0]), int(search[1])
             return self.grid[y][x]
-        elif isinstance(search, int):
+        elif isinstance(search, str):
             # Get single cell by drone_id id
             for cell in self.grid.ravel():
                 if cell.is_occupied():
                     for drone in cell.drones:
                         if drone.drone_id == search:
                             return cell
+        elif isinstance(search, int):
+            for cell in self.grid.ravel():
+                if cell.is_occupied():
+                    for drone in cell.drones:
+                        if drone.player_id == search:
+                            return cell
         else:
             return None
 
     # With assumption that move is valid it changes the position of drone
     def change_drone_position(self, drone_id, current_position: tuple, new_position: tuple):
-        assert new_position[0] in range(
-            0, self.size[0]) and new_position[1] in range(0, self.size[1])
+        assert new_position != current_position
+
         cell = self.get_cell(current_position)
         assert cell.is_occupied() == True
         drone = [drone for drone in cell.drones if drone.drone_id == drone_id]
@@ -84,21 +102,20 @@ class GameMap():
         new_cell = self.get_cell(new_position)
         new_cell.add_drone(drone)
 
-        cell.remove_drone(drone)
+        cell.remove_drone(drone.drone_id)
+        assert self.get_cell(drone.drone_id) == self.get_cell(new_position)
+
+    def grid_flatten(self):
+        return self.grid.flatten()
 
     # Return drones wrapper for callculation purposes {'<player_id>': Drones[]}
     def get_drones(self) -> object:
         drones = {}
-        for cell in self.grid.ravel():
-            if cell.is_occupied():
-                for drone in cell.drones:
-                    if drone.player_id not in drones:
-                        drones[drone.player_id] = []
-                    drones[str(drone.player_id)].append(drone)
+        for cell in self.grid_flatten():
+            drones_in_cell = cell.get_drones()
+            for owner_id in drones_in_cell:
+                if owner_id not in drones:
+                    drones[owner_id] = []
+                for d in drones_in_cell[owner_id]:
+                    drones[owner_id].append(d)
         return drones
-
-    def for_each_cell_do(self, function, params: []):
-        for y in range(self.size[1]):
-            for x in range(self.size[0]):
-                curent_cell = self.get_cell((x, y))
-                function(curent_cell, params)
