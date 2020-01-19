@@ -30,7 +30,8 @@ def config_creation_wizard():
             'id': i,
             'type': player_type,
             'path': path,
-            'drone_no': number_of_drones_per_player
+            'drone_no': number_of_drones_per_player,
+            'allowed_actions': [0, 1, 2, 3, 4, 5]
         }
         players_info.append(player_info)
 

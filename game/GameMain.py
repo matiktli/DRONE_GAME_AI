@@ -37,4 +37,4 @@ while keep_playing:
 
     keep_playing = env.end_turn()
 data_visualiser.visualise_from_data(
-    data_collector.db_frame, max_turns=config.max_turns)
+    data_collector.db_frame, max_turns=config.max_turns, init_players=config.number_of_players)

@@ -220,7 +220,11 @@ class GameEngineUtils():
         # Duplicate action
         if game_action.action == Action.DUPLICATE:
             drone.action_duplicate()
-            # TODO duplicate
+            # duplicate logic, poor one TMP
+            drone_ids = list(map(lambda drone: drone.drone_id.split('_')[1], game_map.get_cell(
+                drone.drone_id).get_drones()[str(drone.player_id)]))
+            drone_ids = drone_ids.sort()
+
         # Stay action
         if game_action.action == Action.STAY:
             drone.action_stay()
