@@ -74,7 +74,7 @@ Game and can be done by:
 
 ## Progress fotage:
 
-- Early try with 5 Random bots. (Movement)
+- Early try with 3 Random bots. (Movement)
   ![](.git_examples/early_work_random_bots.png)
 
 - Early try with 3 Random bots. (Duplication & Movement)
