@@ -6,7 +6,7 @@ from DataVisualiser import DataVisualiser
 
 
 # config_path = config_creation_wizard()
-config_path = 'config-test-1.JSON'
+config_path = 'config-test-big.JSON'
 is_print = True
 
 config = Config(config_path)

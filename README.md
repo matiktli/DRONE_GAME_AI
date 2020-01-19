@@ -74,8 +74,11 @@ Game and can be done by:
 
 ## Progress fotage:
 
-- Early try with 5 Random bots. (Bot 0 & Bot 1 aviable actions are modified)
+- Early try with 5 Random bots. (Movement)
   ![](.git_examples/early_work_random_bots.png)
 
-- Early try with 5 Random bots. (Bot 0 & Bot 1 aviable actions are modified)
+- Early try with 3 Random bots. (Duplication & Movement)
   ![](.git_examples/early_work_random_bots_with_duplication_impl.png)
+
+- Early try with 3 Random bots. (Duplication & Movement) (Modified actions per player)
+  ![](.git_examples/early_work_random_bots_individual_pool_of_actions.png)

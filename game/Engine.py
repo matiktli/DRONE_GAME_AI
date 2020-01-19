@@ -285,7 +285,6 @@ class GameEngineUtils():
             for _ in range(0, player.drone_no):
                 new_drone_id = drone_id_generator.get_new_drone_id(
                     player.player_id)
-                print(f'--> For player {player.player_id} -- {new_drone_id}')
                 new_drone = Drone(player.player_id, new_drone_id)
                 init_pos = ((game_map.size[0]/2 + player.player_id),
                             (game_map.size[1]/2 + player.player_id))
