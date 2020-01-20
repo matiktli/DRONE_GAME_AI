@@ -12,6 +12,7 @@ class Drone():
         self.drone_id = drone_id
         self.energy = energy
         self.energy_bandwidth = energy_bandwidth
+        self.has_attacked = False
 
     # Optymise energy to set bandwidth, returns False if drone died in this process
     def __optymise_energy(self) -> bool:
@@ -31,7 +32,7 @@ class Drone():
         self.energy = self.energy + stay_recharge_energy
         self.__optymise_energy()
 
-    def action_duplicate(self, duplicate_factor_energy=0.4):
+    def action_duplicate(self, duplicate_factor_energy=0.6):
         energy_loss = int(self.energy * duplicate_factor_energy)
         self.energy = self.energy - energy_loss
         self.__optymise_energy()
@@ -39,6 +40,11 @@ class Drone():
     def receive_demage(self, energy_damage=15):
         self.energy = self.energy - energy_damage
         self.__optymise_energy()
+
+    def action_env_attack(self) -> int:
+        self.has_attacked = True
+        self.__optymise_energy()
+        return self.energy
 
     def is_alive(self) -> bool:
         result = self.__optymise_energy()

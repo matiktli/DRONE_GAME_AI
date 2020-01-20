@@ -3,6 +3,7 @@ from Map import Cell, GameMap
 from enum import Enum
 from Entity import Drone
 from abc import ABC
+import random
 
 
 class Action(Enum):
@@ -93,7 +94,7 @@ class GameEngine():
             self.env_utils, self.player_service.drone_id_generator)
         self.__initialise_drones()
         print(
-            f"""Initialised game engine with stats: 
+            f"""Initialised game engine with stats:
             -Max Turns: {self.max_turns}
             -No Players: {len(self.player_service.players)}
             -No Moves: {self.player_service.env_actions} """)
@@ -138,8 +139,19 @@ class GameEngine():
     # {'is_on': bool}
     def get_state(self) -> object:
         is_turn_max_limit = self.cur_turn >= self.max_turns
-        is_one_player_left = len(self.game_map.get_drones()) == 1
-        return {'is_on': not is_turn_max_limit and not is_one_player_left}
+        drones = self.game_map.get_drones()
+        is_one_player_left = len(drones) == 1
+        flat_drones = []
+        for owner_id in drones:
+            ds = drones[owner_id]
+            for d in ds:
+                flat_drones.append(d)
+
+        max_drones = self.game_map.size[0] * \
+            self.game_map.size[1] * int(self.game_map.size[0] / 2)
+        max_drones = 3000
+        is_to_much_drones = len(flat_drones) > max_drones
+        return {'is_on': not is_turn_max_limit and not is_one_player_left and not is_to_much_drones}
 
     def increment_turn_counter(self):
         tmp = self.cur_turn
@@ -281,14 +293,23 @@ class GameEngineUtils():
         return game_map
 
     def initialise_drone_positions_for_players(self, game_map: GameMap, players, drone_id_generator):
+        buffor_size = int(0.2 * game_map.size[0])
         for player in players:
+            init_x = random.randint(
+                0 + buffor_size, game_map.size[0] - buffor_size)
+            init_y = random.randint(
+                0 + buffor_size, game_map.size[1] - buffor_size)
+
             for _ in range(0, player.drone_no):
                 new_drone_id = drone_id_generator.get_new_drone_id(
                     player.player_id)
                 new_drone = Drone(player.player_id, new_drone_id)
-                init_pos = ((game_map.size[0]/2 + player.player_id),
-                            (game_map.size[1]/2 + player.player_id))
-                cell = game_map.get_cell(init_pos)
+
+                init_d_x = random.randint(
+                    init_x - buffor_size-1, init_x + buffor_size-1)
+                init_d_y = random.randint(
+                    init_y - buffor_size-1, init_y + buffor_size-1)
+                cell = game_map.get_cell((init_d_x, init_d_y))
                 cell.add_drone(new_drone)
 
 
@@ -329,12 +350,45 @@ class EnvActionUtils():
         cell = game_map.get_cell(drone_id)
         if cell == None:
             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+            print(
+                f"""(?)\t- Drone: {drone_id} did NOT attack in cell: {cell.position}""")
             return game_map
-        # TODO attack single
+        my_drone = cell.get_drone(drone_id)
+        assert my_drone
+        assert my_drone.has_attacked == False
+        enemy_drones_in_cell = [
+            d for d in cell.drones if str(d.player_id) != drone_id.split('_')[0]]
+        if not enemy_drones_in_cell:
+            return game_map
+        target_drone = random.choice(enemy_drones_in_cell)
+        assert target_drone != None
+        damage_to_target = int(my_drone.energy * 0.8)
+        damage_to_source = int(target_drone.energy * 0.2)
+        target_drone.receive_demage(damage_to_target)
+        my_drone.receive_demage(damage_to_source)
+        print(
+            f"""\t- Drone: {my_drone.drone_id} attacked {target_drone.drone_id} and dealed {damage_to_target} in cell: {cell.position}""")
+        if not my_drone.is_alive():
+            removed = cell.remove_drone(my_drone.drone_id)
+            assert removed
+            print(
+                f"""\t\t- Drone: {my_drone.drone_id} died after attacking""")
+        if not target_drone.is_alive():
+            removed = cell.remove_drone(target_drone.drone_id)
+            assert removed
+            print(
+                f"""\t\t- Drone: {target_drone.drone_id} died after BEEING attacking""")
         return game_map
 
     def perform_env_attack_all(self, game_map: GameMap) -> GameMap:
-        # TODO attack all
+        for cell in game_map.grid_flatten():
+            if cell.is_occupied():
+                drones_in_cell = cell.drones
+                for d in drones_in_cell:
+                    if not d.has_attacked:
+                        game_map = self.perform_env_attack_single(
+                            'ENV', d.drone_id, game_map)
+
         return game_map
 
     def perform_env_merge_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:

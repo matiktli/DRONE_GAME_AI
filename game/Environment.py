@@ -93,4 +93,5 @@ class Environment():
         self.engine.add_environment_actions_to_query()
         self.engine.perform_actions_in_query()
         self.engine.increment_turn_counter()
+        self.map.reset_drones_attack()
         return self.engine.get_state()['is_on']
