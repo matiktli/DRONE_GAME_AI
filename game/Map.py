@@ -21,6 +21,12 @@ class Cell():
                 d.drone_id for d in self.drones]
         return result
 
+    def get_drone(self, drone_id: str) -> Drone:
+        for d in self.drones:
+            if d.drone_id == drone_id:
+                return d
+        return None
+
     def add_drone(self, drone: Drone):
         assert not self.is_occupied(drone.drone_id)
         if self.drones == None:
@@ -119,3 +125,10 @@ class GameMap():
                 for d in drones_in_cell[owner_id]:
                     drones[owner_id].append(d)
         return drones
+
+    def reset_drones_attack(self):
+        drones = self.get_drones()
+        for p_id in drones:
+            for d in drones[str(p_id)]:
+                d.has_attacked = False
+        print('-- reset attack of drones')

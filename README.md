@@ -82,3 +82,6 @@ Game and can be done by:
 
 - Early try with 3 Random bots. (Duplication & Movement) (Modified actions per player)
   ![](.git_examples/early_work_random_bots_individual_pool_of_actions.png)
+
+- Early try with 3 Random bots. (Duplication & Movement & Attacking) (Modified actions/stats per photo)
+  ![](.git_examples/early_work_random_bots_attacking_impl.png)
