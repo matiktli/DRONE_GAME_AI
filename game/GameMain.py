@@ -3,10 +3,11 @@ from Bot import Bot, RandomBot
 from utils.config_utils import *
 from DataService import DataCollector
 from DataVisualiser import DataVisualiser
+import sys
 
 
 # config_path = config_creation_wizard()
-config_path = 'config-test-big.JSON'
+config_path = sys.argv[1]
 is_print = True
 
 config = Config(config_path)

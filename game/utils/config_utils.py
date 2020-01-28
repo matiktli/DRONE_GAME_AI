@@ -19,10 +19,16 @@ def config_creation_wizard():
     number_of_players = int(input('- Number of players: '))
     number_of_drones_per_player = int(input('- Number of drones per player: '))
     max_turns = int(input('- Max number of turns: '))
+    drones_energy_max = int(input('- Default drones max energy: '))
+    drones_energy_starting = int(input('- Default drones starting energy: '))
+    drones_energy_cost_move = int(input('- Default drones move energy cost: '))
+    drones_energy_cost_vector_duplicate = float(
+        input('- Default drones duplicate energy cost vector: '))
+    drones_energy_gain_stay = int(input('- Default drones stay energy gain: '))
 
     players_info = []
     for i in range(0, number_of_players):
-        player_type = input(f'Type of player {i}: [RAND, BOT]')
+        player_type = input(f'Type of player {i}, in [RAND, BOT]: ')
         path = ''
         if player_type != 'RAND':
             path = input(f'Model path for player {i}: ')
@@ -31,7 +37,12 @@ def config_creation_wizard():
             'type': player_type,
             'path': path,
             'drone_no': number_of_drones_per_player,
-            'allowed_actions': [0, 1, 2, 3, 4, 5]
+            'allowed_actions': [0, 1, 2, 3, 4, 5],
+            'drones_energy_max': drones_energy_max,
+            'drones_energy_starting': drones_energy_starting,
+            'drones_energy_cost_move': drones_energy_cost_move,
+            'drones_energy_cost_vector_duplicate': drones_energy_cost_vector_duplicate,
+            'drones_energy_gain_stay': drones_energy_gain_stay
         }
         players_info.append(player_info)
 

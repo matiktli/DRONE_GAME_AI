@@ -14,11 +14,12 @@ class Cell():
         self.drones = drones
 
     # Returns if there is any ship inside the cell
-    def is_occupied(self, occupied_by=None) -> bool:
+    def is_occupied(self, drone_id=None, player_id=None) -> bool:
         result = self.drones != None and len(self.drones) > 0
-        if occupied_by != None and result:
-            result = result and occupied_by in [
-                d.drone_id for d in self.drones]
+        if drone_id != None and result:
+            result = result and drone_id in [d.drone_id for d in self.drones]
+        if player_id != None and result:
+            result = result and player_id in [d.player_id for d in self.drones]
         return result
 
     def get_drone(self, drone_id: str) -> Drone:
@@ -34,7 +35,7 @@ class Cell():
         self.drones.append(drone)
 
     def remove_drone(self, drone_id) -> bool:
-        assert self.is_occupied(drone_id)
+        assert self.is_occupied(drone_id=drone_id)
         for i, drone in enumerate(self.drones):
             if drone.drone_id == drone_id:
                 del self.drones[i]
@@ -131,4 +132,3 @@ class GameMap():
         for p_id in drones:
             for d in drones[str(p_id)]:
                 d.has_attacked = False
-        print('-- reset attack of drones')

@@ -118,9 +118,9 @@ class GameEngine():
         env_actions_to_perform.append(
             GameAction('ENV', 'ENV', (-1, -1), EnvAction.MERGE)
         )
-        env_actions_to_perform.append(
-            GameAction('ENV', 'ENV', (-1, -1), EnvAction.DETONATE)
-        )
+        # env_actions_to_perform.append(
+        #     GameAction('ENV', 'ENV', (-1, -1), EnvAction.DETONATE)
+        # )
         for env_action in env_actions_to_perform:
             self.add_action_to_query(env_action)
 
@@ -226,7 +226,6 @@ class GameEngineUtils():
     # Logic responsible for valid special actions of drone
     def __perform_action_special(self, game_action: GameAction, game_map: GameMap) -> GameMap:
         assert game_action.is_special()
-        pass  # ONLY TMP (!!!)
         drone, cell = self.__obtain_drone_from_cell(
             game_action.player_id, game_action.drone_id, game_action.drone_position, game_map)
 
@@ -303,7 +302,15 @@ class GameEngineUtils():
             for _ in range(0, player.drone_no):
                 new_drone_id = drone_id_generator.get_new_drone_id(
                     player.player_id)
-                new_drone = Drone(player.player_id, new_drone_id)
+                new_drone = Drone(
+                    player.player_id,
+                    new_drone_id,
+                    player.drones_energy_starting,
+                    player.drones_energy_bandwith,
+                    player.drones_energy_cost_move,
+                    player.drones_energy_cost_vector_duplicate,
+                    player.drones_energy_gain_stay
+                )
 
                 init_d_x = random.randint(
                     init_x - buffor_size-1, init_x + buffor_size-1)
@@ -394,13 +401,41 @@ class EnvActionUtils():
     def perform_env_merge_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:
         cell = game_map.get_cell(drone_id)
         if cell == None:
-            # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+             # If cell is None it means that drone can not anymore perform action, since it does not exist anymore
+            print(
+                f"""(?)\t- Drone: {drone_id} did NOT merged in cell [NOT_EXISTING]: {cell.position}""")
             return game_map
-        # TODO merge single
+        my_drone = cell.get_drone(drone_id)
+        assert my_drone
+        my_other_drones = []
+        for d in cell.drones:
+            # If there are enemy drones in the cell we can not merge
+            if d.player_id != my_drone.player_id:
+                print(
+                    f"""(?)\t- Drone: {drone_id} did NOT merged in cell [ENEMY_CLOSE]: {cell.position}""")
+                return game_map
+            elif d.drone_id != my_drone.drone_id:
+                my_other_drones.append(d)
+        # If that happens that there are no other drones then just do nothing
+        if len(my_other_drones) == 0:
+            print(
+                f"""(?)\t- Drone: {drone_id} did NOT merged in cell [NO_NEIGHBOURS]: {cell.position}""")
+            return game_map
+        target_drone = random.choice(my_other_drones)
+        assert target_drone
+        target_drone.action_merge(my_drone)
+        cell.remove_drone(my_drone.drone_id)
+        print(
+            f"""(?)\t- Drone: {drone_id} did merged, into drone: {target_drone.drone_id}, in cell [NO_NEIGHBOURS]: {cell.position}""")
         return game_map
 
     def perform_env_merge_all(self, game_map: GameMap) -> GameMap:
-        # TODO merge all
+        drones = game_map.get_drones()
+        for owner_id in drones:
+            player_drones = drones[owner_id]
+            for drone in player_drones:
+                game_map = self.perform_env_merge_single(
+                    'ENV', drone.drone_id, game_map)
         return game_map
 
     def perform_env_detonate_single(self, player_id: str, drone_id: str, game_map: GameMap) -> GameMap:

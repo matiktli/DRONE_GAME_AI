@@ -11,11 +11,17 @@ Player representation object
 
 class Player():
 
-    def __init__(self, player_id, bot: Bot, drone_no, allowed_actions_ids=None):
+    def __init__(self, player_id, bot: Bot, drone_no, allowed_actions_ids=None, drones_energy_bandwith=None, drones_energy_starting=None, drones_energy_cost_move=None,
+                 drones_energy_cost_vector_duplicate=None, drones_energy_gain_stay=None):
         self.player_id = player_id
         self.bot = bot
         self.allowed_actions_ids = allowed_actions_ids
         self.drone_no = drone_no
+        self.drones_energy_bandwith = drones_energy_bandwith
+        self.drones_energy_starting = drones_energy_starting
+        self.drones_energy_cost_move = drones_energy_cost_move
+        self.drones_energy_cost_vector_duplicate = drones_energy_cost_vector_duplicate
+        self.drones_energy_gain_stay = drones_energy_gain_stay
 
 
 class DroneIdGenerator():
@@ -43,10 +49,22 @@ class PlayerService():
         self.env_actions = env_actions
         self.drone_id_generator = DroneIdGenerator(len(players_config))
         for p in players_config:
-            self.__add_player(int(p['id']), str(
-                p['type']), int(p['drone_no']), p['path'], p['allowed_actions'])
+            self.__add_player(
+                int(p['id']),
+                str(p['type']),
+                int(p['drone_no']),
+                p['path'],
+                p['allowed_actions'],
+                (0, int(p['drones_energy_max'])),
+                int(p['drones_energy_starting']),
+                int(p['drones_energy_cost_move']),
+                float(p['drones_energy_cost_vector_duplicate']),
+                int(p['drones_energy_gain_stay'])
+            )
 
-    def __add_player(self, player_id: int, p_type: str, drone_no: int, path: str = None, allowed_actions_config=None):
+    def __add_player(self, player_id: int, p_type: str, drone_no: int, path: str = None, allowed_actions_config=None,
+                     drones_energy_bandwith=None, drones_energy_starting=None, drones_energy_cost_move=None,
+                     drones_energy_cost_vector_duplicate=None, drones_energy_gain_stay=None):
         bot = None
         actions = []
         for act_id in allowed_actions_config:
@@ -57,7 +75,8 @@ class PlayerService():
             bot = RandomBot(player_id, actions)
         elif p_type == 'BOT':
             bot = None
-        p = Player(player_id, bot, drone_no)
+        p = Player(player_id, bot, drone_no, act_id, drones_energy_bandwith, drones_energy_starting,
+                   drones_energy_cost_move, drones_energy_cost_vector_duplicate, drones_energy_gain_stay)
         print(
             f'Added player with id: {player_id} and type: {p_type} [{path}] and actions: {list(map(lambda a: a.value["id"], actions))}')
         self.players.append(p)
