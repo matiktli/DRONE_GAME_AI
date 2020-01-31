@@ -3,6 +3,7 @@ from Bot import Bot, RandomBot
 from utils.config_utils import *
 from data.DataService import DataCollector
 from DataVisualiser import DataVisualiser
+import data.DataVisualizer as DV
 import sys
 
 
@@ -14,6 +15,7 @@ config = Config(config_path)
 env = Environment(config)
 data_collector = DataCollector()
 data_visualiser = DataVisualiser()
+dv = DV.DataVisualizer()
 
 
 # Start simulating the game
@@ -40,5 +42,7 @@ while keep_playing:
 
 # After game actions
 data_collector.stats()
+dv.replay_game(data_collector.db_frame,
+               data_collector.db_decission)
 data_visualiser.visualise_from_data(
     data_collector.db_frame, max_turns=config.max_turns, init_players=config.number_of_players)
