@@ -1,1 +1,56 @@
-{"game.map.size_x": 100, "game.map.size_y": 100, "game.max_turns": 80, "game.players_no": 4, "players": [{"id": 0, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3, 4, 5], "drones_energy_max": 250, "drones_energy_starting": 200, "drones_energy_cost_move": 10, "drones_energy_cost_vector_duplicate": 0.6, "drones_energy_gain_stay": 20}, {"id": 1, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3, 4, 5], "drones_energy_max": 250, "drones_energy_starting": 200, "drones_energy_cost_move": 10, "drones_energy_cost_vector_duplicate": 0.6, "drones_energy_gain_stay": 20}, {"id": 2, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3, 4, 5], "drones_energy_max": 250, "drones_energy_starting": 200, "drones_energy_cost_move": 10, "drones_energy_cost_vector_duplicate": 0.6, "drones_energy_gain_stay": 20}, {"id": 3, "type": "RAND", "path": "", "drone_no": 100, "allowed_actions": [0, 1, 2, 3, 4, 5], "drones_energy_max": 250, "drones_energy_starting": 200, "drones_energy_cost_move": 10, "drones_energy_cost_vector_duplicate": 0.6, "drones_energy_gain_stay": 20}]}
+{
+  "game.map.size_x": 100,
+  "game.map.size_y": 100,
+  "game.max_turns": 80,
+  "game.players_no": 4,
+  "players": [
+    {
+      "id": 0,
+      "type": "RAND",
+      "path": "",
+      "drone_no": 100,
+      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drones_energy_max": 250,
+      "drones_energy_starting": 200,
+      "drones_energy_cost_move": 10,
+      "drones_energy_cost_vector_duplicate": 0.6,
+      "drones_energy_gain_stay": 20
+    },
+    {
+      "id": 1,
+      "type": "RAND",
+      "path": "",
+      "drone_no": 100,
+      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drones_energy_max": 250,
+      "drones_energy_starting": 200,
+      "drones_energy_cost_move": 10,
+      "drones_energy_cost_vector_duplicate": 0.6,
+      "drones_energy_gain_stay": 20
+    },
+    {
+      "id": 2,
+      "type": "RAND",
+      "path": "",
+      "drone_no": 100,
+      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drones_energy_max": 250,
+      "drones_energy_starting": 200,
+      "drones_energy_cost_move": 10,
+      "drones_energy_cost_vector_duplicate": 0.6,
+      "drones_energy_gain_stay": 20
+    },
+    {
+      "id": 3,
+      "type": "RAND",
+      "path": "",
+      "drone_no": 100,
+      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drones_energy_max": 250,
+      "drones_energy_starting": 200,
+      "drones_energy_cost_move": 10,
+      "drones_energy_cost_vector_duplicate": 0.6,
+      "drones_energy_gain_stay": 20
+    }
+  ]
+}
