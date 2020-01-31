@@ -1,7 +1,7 @@
 from Environment import Environment
 from Bot import Bot, RandomBot
 from utils.config_utils import *
-from DataService import DataCollector
+from data.DataService import DataCollector
 from DataVisualiser import DataVisualiser
 import sys
 
@@ -16,7 +16,7 @@ data_collector = DataCollector()
 data_visualiser = DataVisualiser()
 
 
-# Play a game
+# Start simulating the game
 input('To start game press [any] key...')
 keep_playing = True
 while keep_playing:
@@ -37,5 +37,8 @@ while keep_playing:
         env.pass_actions(players_decissions)
 
     keep_playing = env.end_turn()
+
+# After game actions
+data_collector.stats()
 data_visualiser.visualise_from_data(
     data_collector.db_frame, max_turns=config.max_turns, init_players=config.number_of_players)

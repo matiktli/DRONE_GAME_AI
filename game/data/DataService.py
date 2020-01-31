@@ -46,8 +46,18 @@ class GameFrameData():
 
 class DecissionData():
 
-    def __init__(self):
-        pass
+    def __init__(self, turn_id):
+        self.turn_id = turn_id
+        self.drone_id = None
+        self.player_id = None
+        self.action = None
+
+    def from_game_action(self, game_action):
+        self.drone_id = game_action.drone_id
+        assert self.drone_id
+        self.player_id = self.drone_id[0]
+        self.action = game_action.action
+        return self
 
 
 class DataCollector():
@@ -56,17 +66,22 @@ class DataCollector():
         self.db_frame = {}
         self.db_decission = {}
 
-    def store_game_frame_data(self, turn_id, game_frame) -> GameFrameData:
+    def store_game_frame_data(self, turn_id, game_frame):
         turn_id = str(turn_id)
         if turn_id not in self.db_frame:
             game_frame_data = GameFrameData(
                 turn_id).from_game_frame(game_frame)
             self.db_frame[turn_id] = game_frame_data
 
-    def store_player_decissions_data(self, turn_id, player_id, decissions):
+    def store_player_decissions_data(self, turn_id, player_id, game_actions):
         turn_id = str(turn_id)
         if turn_id not in self.db_decission:
-            self.db_decission[turn_id] = {}
-        for dec in decissions:
-            # TODO store player decission data
-            pass
+            self.db_decission[turn_id] = []
+        for game_action in game_actions:
+            decission_data = DecissionData(
+                turn_id).from_game_action(game_action)
+            self.db_decission[turn_id].append(decission_data)
+
+    def stats(self):
+        print(f'Turns: {len(self.db_frame)}')
+        print(f'Decissions: {len(self.db_decission)}')

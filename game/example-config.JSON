@@ -48,8 +48,8 @@
       "allowed_actions": [0, 1, 2, 3, 4, 5],
       "drones_energy_max": 250,
       "drones_energy_starting": 200,
-      "drones_energy_cost_move": 10,
-      "drones_energy_cost_vector_duplicate": 0.6,
+      "drones_energy_cost_move": 5,
+      "drones_energy_cost_vector_duplicate": 0.5,
       "drones_energy_gain_stay": 20
     }
   ]
