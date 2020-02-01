@@ -4,6 +4,7 @@ import pandas as pd
 import cv2
 import numpy as np
 import time
+import imageio
 
 
 class DataVisualizer():
@@ -77,8 +78,11 @@ class DataVisualizer():
                 game_frame_data, cell_visual_size, window_size)
             frame_images.append(img)
 
+        images = []
         for i, img_f in enumerate(frame_images):
             cv2.imshow('GAME_REPLAY', img_f)
             cv2.waitKey(100)
+            images.append(img_f)
+        imageio.mimsave('test/GAME_1.gif', images)
 
         cv2.destroyAllWindows()
