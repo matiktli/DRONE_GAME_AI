@@ -1,3 +1,4 @@
+import copy
 
 
 class GameFrameData():
@@ -20,7 +21,7 @@ class GameFrameData():
         return result
 
     def from_game_frame(self, game_frame):
-        self.grid = game_frame.map.grid
+        self.grid = copy.deepcopy(game_frame.map.grid)
         self.grid_size = game_frame.map.size
         self.drones = game_frame.map.get_drones()
 
@@ -85,3 +86,12 @@ class DataCollector():
     def stats(self):
         print(f'Turns: {len(self.db_frame)}')
         print(f'Decissions: {len(self.db_decission)}')
+
+    def stats_extended(self):
+        for turn_id in self.db_frame:
+            counter = 0
+            fr = self.db_frame[turn_id]
+            for cell in fr.grid.ravel():
+                if cell.is_occupied():
+                    counter = counter + len(cell.drones)
+            print(f'{turn_id} -> Alive: {counter}')

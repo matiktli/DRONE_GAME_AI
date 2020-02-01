@@ -41,8 +41,7 @@ while keep_playing:
     keep_playing = env.end_turn()
 
 # After game actions
-data_collector.stats()
-dv.replay_game(data_collector.db_frame,
-               data_collector.db_decission)
+dv.replay_game(data_collector.db_frame, data_collector.db_decission)
+
 data_visualiser.visualise_from_data(
     data_collector.db_frame, max_turns=config.max_turns, init_players=config.number_of_players)
