@@ -74,6 +74,10 @@ Game and can be done by:
 
 ## Progress fotage:
 
+- First visualization tool. (random bots)
+  ![](.git_example/early_work_visualization_tool_1.gif)
+  ![](.git_example/early_work_visualization_tool_2.gif)
+
 - Early try with 3 Random bots. (Movement)
   ![](.git_examples/early_work_random_bots.png)
 
