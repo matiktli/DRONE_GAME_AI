@@ -66,6 +66,41 @@ Game and can be done by:
 
 ---
 
+## How to start
+
+### Creating game environemnt and simulating:
+
+```python
+# Initialise data storage impl
+data_store = DataStore()
+
+# --- Single Game Container Start ---
+container = SingleGameContainer()\
+    .with_config(CONFIG_PATH, IS_DISPLAY, GAME_NAME)\
+    .with_data_store(data_store)\
+    .simulate()\
+    .save_game_outcome(FOLDER_PREFIX)
+# --- Single Game Container End ---
+```
+
+### Visualizing game data:
+
+```python
+# Read data from saved storage
+data_store = DataStore().with_data_from_file(FRAME_DB_PATH, DECISION_DB_PATH)
+
+# Initialise game visualization module
+data_visualizer = DataVisualizer(GAME_NAME, IS_DISPLAY)
+
+# Replay game and save gif
+img_frames = data_visualizer.replay_game(data_store.db_frame, data_store.db_decission)
+data_visualizer.save_gif(img_frames, GIF_PATH)
+
+# Display plot created from data and save it
+plt = data_visualizer.plot_from_data(data_store.db_frame)
+data_visualizer.save_plot(plt, PLOT_PATH)
+```
+
 ## Config file
 
     {

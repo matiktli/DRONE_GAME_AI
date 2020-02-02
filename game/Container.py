@@ -27,10 +27,6 @@ class SingleGameContainer():
         self.DATA_STORE = data_store
         return self
 
-    def with_data_visualizer(self, data_visualizer):
-        self.DATA_VLISUALIZER = data_visualizer
-        return self
-
     # Start simulating the game
     def simulate(self):
         assert self.CONFIG
