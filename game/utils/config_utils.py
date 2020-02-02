@@ -74,13 +74,13 @@ Class to simplify loading of config data
 class Config():
 
     def __init__(self, path):
-        raw_data = load_config(path)
-        self.map_size = (int(raw_data['game.map.size_x']),
-                         int(raw_data['game.map.size_y']))
-        self.max_turns = int(raw_data['game.max_turns'])
-        self.env_config = raw_data['env']
-        self.number_of_players = int(raw_data['game.players_no'])
-        self.players_config = raw_data['players']
+        self.raw_data = load_config(path)
+        self.map_size = (int(self.raw_data['game.map.size_x']),
+                         int(self.raw_data['game.map.size_y']))
+        self.max_turns = int(self.raw_data['game.max_turns'])
+        self.env_config = self.raw_data['env']
+        self.number_of_players = int(self.raw_data['game.players_no'])
+        self.players_config = self.raw_data['players']
 
 
 if __name__ == "__main__":

@@ -2,6 +2,13 @@ from Environment import Environment
 from utils.config_utils import *
 from data.DataService import DataStore
 import data.DataVisualizer as DV
+import os
+
+
+"""
+This is a container representation of easy to handle game model, with builder structure.
+ORDER MATTERS... (yeah, not typical, but i have asserts to enforce)
+"""
 
 
 class SingleGameContainer():
@@ -26,6 +33,8 @@ class SingleGameContainer():
 
     # Start simulating the game
     def simulate(self):
+        assert self.CONFIG
+        assert self.ENV
         keep_playing = True
         while keep_playing:
             frame = self.ENV.get_frame()
@@ -47,3 +56,25 @@ class SingleGameContainer():
 
             keep_playing = self.ENV.end_turn()
         return self
+
+    def save_game_outcome(self, path_prefix):
+        assert self.DATA_STORE
+        assert self.GAME_NAME
+        path = path_prefix + 'GAME_' + str(self.GAME_NAME)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        self.DATA_STORE.save_data_to_file(
+            path + '/FRAME_DATA.json', path + '/DECISION_DATA.json')
+        config_json = self.CONFIG.raw_data
+        save_config(path + '/CONFIG.json', config_json)
+        return self
+
+
+# DO NOT USE, NEED TO GET RETHINKED
+class MultipleGameContainer():
+
+    def __init__(self):
+        pass
+
+    def with_configs(self, config_paths: [], is_display, game_names: []):
+        assert len(config_paths) == len(game_names)
