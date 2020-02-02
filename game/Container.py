@@ -23,6 +23,10 @@ class SingleGameContainer():
         self.ENV = Environment(self.CONFIG)
         return self
 
+    def with_reward_generator(self, reward_generator):
+        self.REWARD_GENERATOR = reward_generator
+        return self
+
     def with_data_store(self, data_store):
         self.DATA_STORE = data_store
         return self
@@ -51,6 +55,10 @@ class SingleGameContainer():
                 self.ENV.pass_actions(players_decissions)
 
             keep_playing = self.ENV.end_turn()
+
+            reward = self.REWARD_GENERATOR.generate_reward(
+                self.DATA_STORE.db_frame)
+
         return self
 
     def save_game_outcome(self, path_prefix):
