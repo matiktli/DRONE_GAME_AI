@@ -1,6 +1,8 @@
 # Game AI
 
-Drone Wars simulation engine build in python, inspired by: [Halite.io - 1st edition](https://2016.halite.io/index.html)
+Drone Wars simulation engine build in python, inspired by: [Halite.io - 1st edition](https://2016.halite.io/index.html).
+Purpose of it is to simulate easy to control environment for training deep learning models on making decisions based on mutliple parameter input.
+Possible transfer learning environment.
 
 ## Game Rules
 
