@@ -115,9 +115,9 @@ class GameEngine():
         env_actions_to_perform.append(
             GameAction('ENV', 'ENV', (-1, -1), EnvAction.ATTACK)
         )
-        env_actions_to_perform.append(
-            GameAction('ENV', 'ENV', (-1, -1), EnvAction.MERGE)
-        )
+        # env_actions_to_perform.append(
+        #     GameAction('ENV', 'ENV', (-1, -1), EnvAction.MERGE)
+        # )
         # env_actions_to_perform.append(
         #     GameAction('ENV', 'ENV', (-1, -1), EnvAction.DETONATE)
         # )

@@ -12,16 +12,18 @@ class DataVisualizer():
     BG_COLOR = (0, 0, 0)
     MATRIX_COLOR = (255, 255, 255)
     PLAYER_COLOR_POOL = [
-        (255, 0, 0),
-        (0, 255, 0),
-        (0, 0, 255),
-        (255, 255, 0),
-        (255, 0, 255),
-        (0, 255, 255)
+        [(255, 0, 0), 'red'],
+        [(0, 255, 0), 'green'],
+        [(0, 0, 255), 'blue'],
+        [(255, 255, 0), 'yellow'],
+        [(255, 0, 255), 'purple'],
+        [(255, 128, 0), 'orange']
     ]
 
-    def __init__(self):
-        pass
+    def __init__(self, game_id, is_display, is_save):
+        self.is_display = is_display
+        self.is_save = is_save
+        self.game_id = game_id
 
     def __add_matrix_to_img(self, img, cell_size, window_size):
         # Adding vertical lines
@@ -50,9 +52,9 @@ class DataVisualizer():
         for p_id in drones:
             p_drones = drones[p_id]
             img = cv2.circle(img, cell_center_on_img, len(p_drones) * 10,
-                             DataVisualizer.PLAYER_COLOR_POOL[int(p_id)], len(p_drones) * 4)
+                             DataVisualizer.PLAYER_COLOR_POOL[int(p_id)][0], len(p_drones) * 4)
             img = cv2.putText(img, str(len(p_drones)), cell_center_on_img,
-                              cv2.FONT_HERSHEY_SIMPLEX, 1, DataVisualizer.PLAYER_COLOR_POOL[int(p_id)])
+                              cv2.FONT_HERSHEY_SIMPLEX, 1, DataVisualizer.PLAYER_COLOR_POOL[int(p_id)][0])
         return img
 
     def get_image_from_game_frame_data(self, game_frame_data: GameFrameData, cell_size: tuple, window_size: tuple):
@@ -78,11 +80,45 @@ class DataVisualizer():
                 game_frame_data, cell_visual_size, window_size)
             frame_images.append(img)
 
-        images = []
-        for i, img_f in enumerate(frame_images):
-            cv2.imshow('GAME_REPLAY', img_f)
-            cv2.waitKey(100)
-            images.append(img_f)
-        imageio.mimsave('test/GAME_1.gif', images)
+        if self.is_display:
+            for i, img_f in enumerate(frame_images):
+                cv2.imshow(f'GAME_REPLAY_{self.game_id}', img_f)
+                cv2.waitKey(100)
+            cv2.destroyAllWindows()
 
-        cv2.destroyAllWindows()
+        if self.is_save:
+            imageio.mimsave(
+                f'test/GAME_REPLAY_{self.game_id}.gif', frame_images)
+
+    def __plot_data(self, data):
+        df = pd.DataFrame(data)
+        for i, label in enumerate(data):
+            if 'y' in label:
+                plt.plot('x', label, data=df,
+                         color=DataVisualizer.PLAYER_COLOR_POOL[int(label.replace('y', '')) % (len(DataVisualizer.PLAYER_COLOR_POOL))][1], label=label.replace('y', 'Bot: '), linewidth=2)
+        plt.title(
+            f'Simulation with: {len(data)-1} bots making random decissions')
+        plt.legend()
+
+        if self.is_display:
+            plt.show()
+
+        if self.is_save:
+            plt.savefig(f'test/GAME_GRAPH_1_{self.game_id}.png')
+
+    def plot_from_data(self, data_frames: {}, max_turns=None, init_players=None):
+        data = {
+            'x': [i for i in range(0, max_turns)]
+        }
+        for i in range(0, init_players):
+            player_label = 'y' + str(i)
+            if player_label not in data:
+                data[player_label] = [-1 for _ in range(0, max_turns)]
+
+        for turn_id in range(0, max_turns):
+            if str(turn_id) in data_frames:
+                d_frame = data_frames[str(turn_id)]
+                for player_id in d_frame.drones:
+                    p_drones = d_frame.drones[player_id]
+                    data['y' + player_id][int(turn_id)] = len(p_drones)
+        self.__plot_data(data)
