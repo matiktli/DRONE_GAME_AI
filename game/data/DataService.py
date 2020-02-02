@@ -1,6 +1,9 @@
 import copy
+import json
+import pickle
 
 
+# Entity representation of GameFrameData
 class GameFrameData():
 
     def __init__(self, turn_id):
@@ -41,10 +44,11 @@ class GameFrameData():
         """)
         return self
 
-    def __str__(self):
-        pass
+    # def __str__(self):
+    #     pass
 
 
+# Entity representation of DecissionData
 class DecissionData():
 
     def __init__(self, turn_id):
@@ -61,11 +65,41 @@ class DecissionData():
         return self
 
 
-class DataCollector():
+# Database representation, for now in-mem
+class DataStore():
 
     def __init__(self):
         self.db_frame = {}
         self.db_decission = {}
+
+    # Initialise database from file
+    def with_data_from_file(self, path_to_db_frame_store=None, path_to_db_decission_store=None):
+        def load_from_file(file_path):
+            with open(file_path, 'rb') as json_file:
+                #data = json.load(json_file)
+                data = pickle.load(json_file)
+                return data
+        if path_to_db_frame_store:
+            self.db_frame = load_from_file(path_to_db_frame_store)
+        if path_to_db_decission_store:
+            self.db_decission = load_from_file(path_to_db_decission_store)
+        return self
+
+    # Save database to file
+    def save_data_to_file(self, path_to_db_frame_store=None, path_to_db_decission_store=None):
+        def save_to_file(file_path, db_data):
+            with open(file_path, 'wb') as outfile:
+                # json.dump(db_data, outfile)
+                pickle.dump(db_data, outfile)
+                return True
+        if path_to_db_frame_store:
+            saved = save_to_file(path_to_db_frame_store, self.db_frame)
+            assert saved
+
+        if path_to_db_decission_store:
+            saved = save_to_file(path_to_db_decission_store, self.db_decission)
+            assert saved
+        return saved
 
     def store_game_frame_data(self, turn_id, game_frame):
         turn_id = str(turn_id)
@@ -84,10 +118,6 @@ class DataCollector():
             self.db_decission[turn_id].append(decission_data)
 
     def stats(self):
-        print(f'Turns: {len(self.db_frame)}')
-        print(f'Decissions: {len(self.db_decission)}')
-
-    def stats_extended(self):
         for turn_id in self.db_frame:
             counter = 0
             fr = self.db_frame[turn_id]

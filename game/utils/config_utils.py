@@ -13,6 +13,7 @@ def save_config(path, config_json_data):
 
 
 def config_creation_wizard():
+    # Collect main info
     config_file_name = input('- Path of config file: ')
     map_size_x = int(input('- Map initial size X: '))
     map_size_y = int(input('- Map initial size Y: '))
@@ -26,6 +27,12 @@ def config_creation_wizard():
         input('- Default drones duplicate energy cost vector: '))
     drones_energy_gain_stay = int(input('- Default drones stay energy gain: '))
 
+    # Collect env info
+    env_info = {
+        'actions': ['KILL', 'ATTACK', 'MERGE', 'DETONATE']
+    }
+
+    # Collect players info
     players_info = []
     for i in range(0, number_of_players):
         player_type = input(f'Type of player {i}, in [RAND, BOT]: ')
@@ -37,7 +44,7 @@ def config_creation_wizard():
             'type': player_type,
             'path': path,
             'drone_no': number_of_drones_per_player,
-            'allowed_actions': [0, 1, 2, 3, 4, 5],
+            'allowed_actions': ['MOVE_LEFT', 'MOVE_RIGHT', 'MOVE_UP', 'MOVE_DOWN', 'STAY', 'DUPLICATE'],
             'drones_energy_max': drones_energy_max,
             'drones_energy_starting': drones_energy_starting,
             'drones_energy_cost_move': drones_energy_cost_move,
@@ -46,11 +53,13 @@ def config_creation_wizard():
         }
         players_info.append(player_info)
 
+    # Create config file
     json_file = {
         'game.map.size_x': map_size_x,
         'game.map.size_y': map_size_y,
         'game.max_turns': max_turns,
         'game.players_no': number_of_players,
+        'env': env_info,
         'players': players_info
     }
     save_config(config_file_name, json_file)
@@ -65,12 +74,13 @@ Class to simplify loading of config data
 class Config():
 
     def __init__(self, path):
-        raw_data = load_config(path)
-        self.map_size = (int(raw_data['game.map.size_x']),
-                         int(raw_data['game.map.size_y']))
-        self.max_turns = int(raw_data['game.max_turns'])
-        self.number_of_players = int(raw_data['game.players_no'])
-        self.players_config = raw_data['players']
+        self.raw_data = load_config(path)
+        self.map_size = (int(self.raw_data['game.map.size_x']),
+                         int(self.raw_data['game.map.size_y']))
+        self.max_turns = int(self.raw_data['game.max_turns'])
+        self.env_config = self.raw_data['env']
+        self.number_of_players = int(self.raw_data['game.players_no'])
+        self.players_config = self.raw_data['players']
 
 
 if __name__ == "__main__":

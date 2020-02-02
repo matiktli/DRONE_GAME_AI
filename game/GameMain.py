@@ -1,47 +1,45 @@
 from Environment import Environment
-from Bot import Bot, RandomBot
 from utils.config_utils import *
-from data.DataService import DataCollector
-from DataVisualiser import DataVisualiser
-import data.DataVisualizer as DV
+from data.DataService import DataStore
+from data.DataVisualizer import DataVisualizer
 import sys
+import random
+from Container import SingleGameContainer
 
 
-# config_path = config_creation_wizard()
-config_path = sys.argv[1]
-is_print = True
+# Configuration part
+CONFIG_PATH = sys.argv[1]
+IS_DISPLAY = False
+IS_SAVE = True
+GAME_NAME = random.randint(0, 100)
+FOLDER_PREFIX = 'test/'
 
-config = Config(config_path)
-env = Environment(config)
-data_collector = DataCollector()
-data_visualiser = DataVisualiser()
-dv = DV.DataVisualizer()
+# Initialise data storage impl
+data_store = DataStore()
 
+# --- Single Game Container Start ---
+container = SingleGameContainer()\
+    .with_config(CONFIG_PATH, IS_DISPLAY, GAME_NAME)\
+    .with_data_store(data_store)\
+    .simulate()\
+    .save_game_outcome(FOLDER_PREFIX)
+# --- Single Game Container End ---
 
-# Start simulating the game
-input('To start game press [any] key...')
-keep_playing = True
-while keep_playing:
-    frame = env.get_frame()
-    data_collector.store_game_frame_data(env.engine.cur_turn, frame)
-    print('------------------------------------------------')
-    for player in env.player_svc.players:
-        players_decissions = player.bot.make_decissions(frame)
-        data_collector.store_player_decissions_data(env.engine.cur_turn,
-                                                    player.player_id, players_decissions)
-        if is_print:
-            print(f"""
-            Player making decissions:
-                Player_id: {player.player_id}
-                Turn: {env.engine.cur_turn}
-                Decissions: {list(map( lambda decission: str(decission), players_decissions))}
-            """)
-        env.pass_actions(players_decissions)
+# Read data from saved storage
+data_store = DataStore().with_data_from_file(
+    f'{FOLDER_PREFIX}GAME_{GAME_NAME}/FRAME_DATA.json', f'{FOLDER_PREFIX}GAME_{GAME_NAME}/DECISION_DATA.json')
 
-    keep_playing = env.end_turn()
+# Initialise game visualization module
+data_visualizer = DataVisualizer(str(GAME_NAME), IS_DISPLAY)
 
-# After game actions
-dv.replay_game(data_collector.db_frame, data_collector.db_decission)
+# Replay game and save gif
+img_frames = data_visualizer.replay_game(data_store.db_frame,
+                                         data_store.db_decission)
+data_visualizer.save_gif(
+    img_frames, f'{FOLDER_PREFIX}GAME_{GAME_NAME}/GAME_REPLAY.gif')
 
-data_visualiser.visualise_from_data(
-    data_collector.db_frame, max_turns=config.max_turns, init_players=config.number_of_players)
+# Display plot created from data and save it
+plt = data_visualizer.plot_from_data(
+    data_store.db_frame, max_turns=container.CONFIG.max_turns, init_players=container.CONFIG.number_of_players)
+data_visualizer.save_plot(
+    plt, f'{FOLDER_PREFIX}GAME_{GAME_NAME}/GAME_GRAPH_1.png')
