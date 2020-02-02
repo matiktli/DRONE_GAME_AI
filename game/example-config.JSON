@@ -1,55 +1,86 @@
 {
-  "game.map.size_x": 100,
-  "game.map.size_y": 100,
-  "game.max_turns": 80,
+  "game.map.size_x": 30,
+  "game.map.size_y": 30,
+  "game.max_turns": 100,
   "game.players_no": 4,
+  "env": {
+    "actions": ["KILL", "ATTACK", "MERGE", "DETONATE"]
+  },
   "players": [
     {
       "id": 0,
       "type": "RAND",
       "path": "",
-      "drone_no": 100,
-      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drone_no": 30,
+      "allowed_actions": [
+        "MOVE_LEFT",
+        "MOVE_RIGHT",
+        "MOVE_UP",
+        "MOVE_DOWN",
+        "STAY",
+        "DUPLICATE"
+      ],
       "drones_energy_max": 250,
       "drones_energy_starting": 200,
       "drones_energy_cost_move": 10,
       "drones_energy_cost_vector_duplicate": 0.6,
-      "drones_energy_gain_stay": 20
+      "drones_energy_gain_stay": 5
     },
     {
       "id": 1,
       "type": "RAND",
       "path": "",
-      "drone_no": 100,
-      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drone_no": 30,
+      "allowed_actions": [
+        "MOVE_LEFT",
+        "MOVE_RIGHT",
+        "MOVE_UP",
+        "MOVE_DOWN",
+        "STAY",
+        "DUPLICATE"
+      ],
       "drones_energy_max": 250,
       "drones_energy_starting": 200,
-      "drones_energy_cost_move": 10,
-      "drones_energy_cost_vector_duplicate": 0.6,
+      "drones_energy_cost_move": 5,
+      "drones_energy_cost_vector_duplicate": 0.7,
       "drones_energy_gain_stay": 20
     },
     {
       "id": 2,
       "type": "RAND",
       "path": "",
-      "drone_no": 100,
-      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drone_no": 30,
+      "allowed_actions": [
+        "MOVE_LEFT",
+        "MOVE_RIGHT",
+        "MOVE_UP",
+        "MOVE_DOWN",
+        "STAY",
+        "DUPLICATE"
+      ],
       "drones_energy_max": 250,
-      "drones_energy_starting": 200,
+      "drones_energy_starting": 100,
       "drones_energy_cost_move": 10,
       "drones_energy_cost_vector_duplicate": 0.6,
-      "drones_energy_gain_stay": 20
+      "drones_energy_gain_stay": 100
     },
     {
       "id": 3,
       "type": "RAND",
       "path": "",
-      "drone_no": 100,
-      "allowed_actions": [0, 1, 2, 3, 4, 5],
+      "drone_no": 30,
+      "allowed_actions": [
+        "MOVE_LEFT",
+        "MOVE_RIGHT",
+        "MOVE_UP",
+        "MOVE_DOWN",
+        "STAY",
+        "DUPLICATE"
+      ],
       "drones_energy_max": 250,
-      "drones_energy_starting": 200,
-      "drones_energy_cost_move": 5,
-      "drones_energy_cost_vector_duplicate": 0.5,
+      "drones_energy_starting": 220,
+      "drones_energy_cost_move": 30,
+      "drones_energy_cost_vector_duplicate": 0.2,
       "drones_energy_gain_stay": 20
     }
   ]

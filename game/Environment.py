@@ -1,6 +1,6 @@
 from Map import GameMap
 from utils.config_utils import Config
-from Engine import GameEngine, GameFrame, GameAction, Action
+from Engine import GameEngine, GameFrame, GameAction, Action, EnvAction
 from typing import List
 from Bot import Bot, RandomBot
 
@@ -11,11 +11,11 @@ Player representation object
 
 class Player():
 
-    def __init__(self, player_id, bot: Bot, drone_no, allowed_actions_ids=None, drones_energy_bandwith=None, drones_energy_starting=None, drones_energy_cost_move=None,
+    def __init__(self, player_id, bot: Bot, drone_no, allowed_actions=None, drones_energy_bandwith=None, drones_energy_starting=None, drones_energy_cost_move=None,
                  drones_energy_cost_vector_duplicate=None, drones_energy_gain_stay=None):
         self.player_id = player_id
         self.bot = bot
-        self.allowed_actions_ids = allowed_actions_ids
+        self.allowed_actions = allowed_actions
         self.drone_no = drone_no
         self.drones_energy_bandwith = drones_energy_bandwith
         self.drones_energy_starting = drones_energy_starting
@@ -54,7 +54,7 @@ class PlayerService():
                 str(p['type']),
                 int(p['drone_no']),
                 p['path'],
-                p['allowed_actions'],
+                list(map(lambda act: Action[act], p['allowed_actions'])),
                 (0, int(p['drones_energy_max'])),
                 int(p['drones_energy_starting']),
                 int(p['drones_energy_cost_move']),
@@ -62,23 +62,18 @@ class PlayerService():
                 int(p['drones_energy_gain_stay'])
             )
 
-    def __add_player(self, player_id: int, p_type: str, drone_no: int, path: str = None, allowed_actions_config=None,
+    def __add_player(self, player_id: int, p_type: str, drone_no: int, path: str = None, allowed_actions=None,
                      drones_energy_bandwith=None, drones_energy_starting=None, drones_energy_cost_move=None,
                      drones_energy_cost_vector_duplicate=None, drones_energy_gain_stay=None):
         bot = None
-        actions = []
-        for act_id in allowed_actions_config:
-            for act in Action:
-                if str(act.value['id']) == str(act_id):
-                    actions.append(act)
         if p_type == 'RAND':
-            bot = RandomBot(player_id, actions)
+            bot = RandomBot(player_id, allowed_actions)
         elif p_type == 'BOT':
             bot = None
-        p = Player(player_id, bot, drone_no, act_id, drones_energy_bandwith, drones_energy_starting,
+        p = Player(player_id, bot, drone_no, allowed_actions, drones_energy_bandwith, drones_energy_starting,
                    drones_energy_cost_move, drones_energy_cost_vector_duplicate, drones_energy_gain_stay)
         print(
-            f'Added player with id: {player_id} and type: {p_type} [{path}] and actions: {list(map(lambda a: a.value["id"], actions))}')
+            f'Added player with id: {player_id} and type: {p_type} [{path}] and actions: {list(map(lambda a: a.value["id"], allowed_actions))}')
         self.players.append(p)
 
 
@@ -94,6 +89,8 @@ class Environment():
         self.player_svc = PlayerService(
             config.players_config, len(list(Action)))
         self.engine = GameEngine(self.map, self.player_svc, config.max_turns)
+        self.env_available_actions = list(
+            map(lambda act: EnvAction[act], config.env_config['actions']))
 
     # Get current frame for environemnt
     def get_frame(self) -> GameFrame:
@@ -109,7 +106,8 @@ class Environment():
         # Perform bot/s actions
         self.engine.perform_actions_in_query()
         # Add and perform environment actions/outcomes
-        self.engine.add_environment_actions_to_query()
+        self.engine.add_environment_actions_to_query(
+            self.env_available_actions)
         self.engine.perform_actions_in_query()
         self.engine.increment_turn_counter()
         self.map.reset_drones_attack()

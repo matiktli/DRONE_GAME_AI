@@ -107,20 +107,13 @@ class GameEngine():
         self.actions_query.append(game_action)
 
     # Add all environment decission actions to query (once a turn)
-    def add_environment_actions_to_query(self):
+    def add_environment_actions_to_query(self, available_actions):
         env_actions_to_perform = []
-        env_actions_to_perform.append(
-            GameAction('ENV', 'ENV', (-1, -1), EnvAction.KILL)
-        )
-        env_actions_to_perform.append(
-            GameAction('ENV', 'ENV', (-1, -1), EnvAction.ATTACK)
-        )
-        # env_actions_to_perform.append(
-        #     GameAction('ENV', 'ENV', (-1, -1), EnvAction.MERGE)
-        # )
-        # env_actions_to_perform.append(
-        #     GameAction('ENV', 'ENV', (-1, -1), EnvAction.DETONATE)
-        # )
+
+        for action in available_actions:
+            env_actions_to_perform.append(
+                GameAction('ENV', 'ENV', (-1, -1), action)
+            )
         for env_action in env_actions_to_perform:
             self.add_action_to_query(env_action)
 
