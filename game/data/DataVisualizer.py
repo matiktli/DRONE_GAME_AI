@@ -20,9 +20,8 @@ class DataVisualizer():
         [(255, 128, 0), 'orange']
     ]
 
-    def __init__(self, game_id, is_display, is_save):
+    def __init__(self, game_id, is_display):
         self.is_display = is_display
-        self.is_save = is_save
         self.game_id = game_id
 
     def __add_matrix_to_img(self, img, cell_size, window_size):
@@ -67,7 +66,7 @@ class DataVisualizer():
             self.__add_cell_data_to_img(img, cell, cell_size)
         return img
 
-    def replay_game(self, game_frames_data, decissions_data, delay_ms=1000):
+    def replay_game(self, game_frames_data, decissions_data, delay_ms=100):
         grid_size = game_frames_data['0'].grid_size
         window_size = (800, 800)
         cell_visual_size = (
@@ -83,12 +82,12 @@ class DataVisualizer():
         if self.is_display:
             for i, img_f in enumerate(frame_images):
                 cv2.imshow(f'GAME_REPLAY_{self.game_id}', img_f)
-                cv2.waitKey(100)
+                cv2.waitKey(delay_ms)
             cv2.destroyAllWindows()
+        return frame_images
 
-        if self.is_save:
-            imageio.mimsave(
-                f'test/GAME_REPLAY_{self.game_id}.gif', frame_images)
+    def save_gif(self, frame_images, path):
+        imageio.mimsave(path, frame_images)
 
     def __plot_data(self, data):
         df = pd.DataFrame(data)
@@ -103,8 +102,7 @@ class DataVisualizer():
         if self.is_display:
             plt.show()
 
-        if self.is_save:
-            plt.savefig(f'test/GAME_GRAPH_1_{self.game_id}.png')
+        return plt
 
     def plot_from_data(self, data_frames: {}, max_turns=None, init_players=None):
         data = {
@@ -121,4 +119,7 @@ class DataVisualizer():
                 for player_id in d_frame.drones:
                     p_drones = d_frame.drones[player_id]
                     data['y' + player_id][int(turn_id)] = len(p_drones)
-        self.__plot_data(data)
+        return self.__plot_data(data)
+
+    def save_plot(self, plt, path):
+        plt.savefig(path)
