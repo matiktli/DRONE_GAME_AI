@@ -5,7 +5,7 @@ from data.DataVisualizer import DataVisualizer
 import sys
 import random
 from Container import SingleGameContainer
-from RewardGenerator import RewardGenerator
+from reward.RewardGenerator import RewardGenerator
 
 
 # Configuration part
