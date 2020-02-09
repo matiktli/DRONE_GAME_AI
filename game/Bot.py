@@ -21,7 +21,7 @@ class RandomBot(Bot):
     def __init__(self, player_id, allowed_actions):
         super().__init__(player_id, allowed_actions)
 
-    def make_decissions(self, game_frame: GameFrame) -> []:
+    def make_decissions(self, game_frame: GameFrame, rewards) -> []:
         drones_c = 0
         actions_to_perform = []
         for cell in game_frame.map.grid_flatten():

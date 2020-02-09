@@ -5,6 +5,7 @@ from data.DataVisualizer import DataVisualizer
 import sys
 import random
 from Container import SingleGameContainer
+from reward.RewardGenerator import SimpleRewardGenerator
 
 
 # Configuration part
@@ -16,11 +17,13 @@ FOLDER_PREFIX = 'test/'
 
 # Initialise data storage impl
 data_store = DataStore()
+reward_generator = SimpleRewardGenerator()
 
 # --- Single Game Container Start ---
 container = SingleGameContainer()\
     .with_config(CONFIG_PATH, IS_DISPLAY, GAME_NAME)\
     .with_data_store(data_store)\
+    .with_reward_generator(reward_generator)\
     .simulate()\
     .save_game_outcome(FOLDER_PREFIX)
 # --- Single Game Container End ---

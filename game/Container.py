@@ -23,6 +23,10 @@ class SingleGameContainer():
         self.ENV = Environment(self.CONFIG)
         return self
 
+    def with_reward_generator(self, reward_generator):
+        self.REWARD_GENERATOR = reward_generator
+        return self
+
     def with_data_store(self, data_store):
         self.DATA_STORE = data_store
         return self
@@ -37,8 +41,10 @@ class SingleGameContainer():
             self.DATA_STORE.store_game_frame_data(
                 self.ENV.engine.cur_turn, frame)
             print('------------------------------------------------')
+            rewards = [0 for p in self.ENV.player_svc.players]
             for player in self.ENV.player_svc.players:
-                players_decissions = player.bot.make_decissions(frame)
+                players_decissions = player.bot.make_decissions(
+                    frame, rewards[player.player_id])
                 self.DATA_STORE.store_player_decissions_data(self.ENV.engine.cur_turn,
                                                              player.player_id, players_decissions)
                 if self.IS_DISPLAY:
@@ -51,6 +57,14 @@ class SingleGameContainer():
                 self.ENV.pass_actions(players_decissions)
 
             keep_playing = self.ENV.end_turn()
+
+            for player in self.ENV.player_svc.players:
+                reward = self.REWARD_GENERATOR.generate_reward(
+                    self.DATA_STORE.db_frame, player.player_id)
+                print(
+                    f'Reward for player: {player.player_id} at turn: {self.ENV.engine.cur_turn-1}-> {reward}')
+                rewards.append(reward)
+
         return self
 
     def save_game_outcome(self, path_prefix):
