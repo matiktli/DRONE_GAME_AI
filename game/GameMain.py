@@ -5,7 +5,7 @@ from data.DataVisualizer import DataVisualizer
 import sys
 import random
 from Container import SingleGameContainer
-from reward.RewardGenerator import RewardGenerator
+from reward.RewardGenerator import SimpleRewardGenerator
 
 
 # Configuration part
@@ -17,7 +17,7 @@ FOLDER_PREFIX = 'test/'
 
 # Initialise data storage impl
 data_store = DataStore()
-reward_generator = RewardGenerator()
+reward_generator = SimpleRewardGenerator()
 
 # --- Single Game Container Start ---
 container = SingleGameContainer()\
